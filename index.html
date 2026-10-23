@@ -1,0 +1,333 @@
+<title>GOAT Multi-Market Risk Calculator</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+:root {
+  /* Layout: Selector Global on top drives mercado+contratos for 3 side-by-side Filtro cards; stacks to one column on phone */
+  --bg: #4c4051;
+  --card-bg: #17141d;
+  --card-border: rgba(255,255,255,0.07);
+  --input-bg: #f1e6d6;
+  --input-text: #2a241f;
+  --text: #f4eee6;
+  --text-dim: #b6a7b7;
+  --divider: rgba(255,255,255,0.1);
+  --accent: #d7a94a;
+  --index-color: #6fb8cc;
+  --gold-color: #d7a94a;
+  --oil-color: #c08347;
+  --font-display: 'Sora', 'Segoe UI', system-ui, sans-serif;
+  --font-body: 'Work Sans', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #efe6ea;
+    --card-bg: #ffffff;
+    --card-border: rgba(0,0,0,0.09);
+    --input-bg: #f8f2e7;
+    --input-text: #2a241f;
+    --text: #2b2430;
+    --text-dim: #7c6d80;
+    --divider: rgba(0,0,0,0.09);
+    --accent: #a8793a;
+    --index-color: #2f7f91;
+    --gold-color: #a8793a;
+    --oil-color: #8a5327;
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #efe6ea;
+  --card-bg: #ffffff;
+  --card-border: rgba(0,0,0,0.09);
+  --input-bg: #f8f2e7;
+  --input-text: #2a241f;
+  --text: #2b2430;
+  --text-dim: #7c6d80;
+  --divider: rgba(0,0,0,0.09);
+  --accent: #a8793a;
+  --index-color: #2f7f91;
+  --gold-color: #a8793a;
+  --oil-color: #8a5327;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: var(--font-body); }
+
+.page {
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 48px 64px;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.page-head { text-align: center; margin-bottom: 36px; }
+.page-head h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 1.05rem + 2vw, 2.3rem);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin: 0 0 10px;
+  text-wrap: balance;
+}
+.subtitle { color: var(--text-dim); font-size: 0.92rem; margin: 0; max-width: 520px; margin-inline: auto; }
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  box-shadow: 0 24px 44px -30px rgba(0,0,0,0.55);
+}
+
+.selector-card {
+  padding: 24px 26px 26px;
+  max-width: 420px;
+  margin: 0 auto 36px;
+}
+.selector-card h2 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 18px;
+}
+
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.field:last-child { margin-bottom: 0; }
+.field label {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-dim);
+}
+
+select, input[type="number"] {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 1rem;
+  background: var(--input-bg);
+  color: var(--input-text);
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 11px 14px;
+  width: 100%;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236b5f54' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+select:focus, input[type="number"]:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 32%, transparent);
+}
+
+.filtros {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+@media (max-width: 760px) {
+  .filtros { grid-template-columns: 1fr; }
+}
+
+.filtro-card {
+  padding: 22px 22px 24px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  border-top: 3px solid var(--asset-accent, var(--accent));
+}
+.filtro-card[data-asset="index"] { --asset-accent: var(--index-color); }
+.filtro-card[data-asset="gold"]  { --asset-accent: var(--gold-color); }
+.filtro-card[data-asset="oil"]   { --asset-accent: var(--oil-color); }
+
+.filtro-card h3 {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+  margin: 0;
+}
+
+.results { margin: 0; display: flex; flex-direction: column; }
+.row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--divider);
+}
+.row:last-child { border-bottom: none; }
+.row dt { font-size: 0.8rem; color: var(--text-dim); font-weight: 500; }
+.row dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--text);
+  font-size: 1rem;
+}
+.row.total dd { font-size: 1.35rem; font-weight: 700; color: var(--asset-accent, var(--accent)); }
+
+.formula-note {
+  margin-top: 40px;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  line-height: 1.7;
+  color: var(--text-dim);
+  max-width: 740px;
+  margin-inline: auto;
+}
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<div class="page">
+  <header class="page-head">
+    <h1>GOAT Multi-Market Risk Calculator</h1>
+    <p class="subtitle">Elige mercado y contratos, luego ingresa el riesgo en USD de cada filtro.</p>
+  </header>
+
+  <section class="card selector-card" aria-label="Selector global">
+    <h2>Selector Global</h2>
+    <div class="field">
+      <label for="market-select">Mercado</label>
+      <select id="market-select">
+        <option value="MNQ">MNQ</option>
+        <option value="NQ" selected>NQ</option>
+        <option value="MGC">MGC (Micro Gold)</option>
+        <option value="GC">GC (Gold)</option>
+        <option value="MCL">MCL (Micro Oil)</option>
+        <option value="CL">CL (Oil)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="contracts-select">Contratos (1&ndash;15)</label>
+      <select id="contracts-select">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9">9</option>
+        <option value="10">10</option>
+        <option value="11">11</option>
+        <option value="12">12</option>
+        <option value="13">13</option>
+        <option value="14">14</option>
+        <option value="15" selected>15</option>
+      </select>
+    </div>
+  </section>
+
+  <section class="filtros">
+    <article class="card filtro-card" data-filtro="1">
+      <h3>Filtro 1</h3>
+      <div class="field">
+        <label for="usd-1">USD</label>
+        <input id="usd-1" type="number" inputmode="decimal" min="0" step="any" value="1500">
+      </div>
+      <dl class="results">
+        <div class="row"><dt>Instrumento</dt><dd id="instr-1">NQ</dd></div>
+        <div class="row"><dt>Contratos</dt><dd id="contratos-1">15</dd></div>
+        <div class="row"><dt>Ticks</dt><dd id="ticks-1">20</dd></div>
+        <div class="row total"><dt>Puntos</dt><dd id="puntos-1">5.00</dd></div>
+      </dl>
+    </article>
+
+    <article class="card filtro-card" data-filtro="2">
+      <h3>Filtro 2</h3>
+      <div class="field">
+        <label for="usd-2">USD</label>
+        <input id="usd-2" type="number" inputmode="decimal" min="0" step="any" value="5000">
+      </div>
+      <dl class="results">
+        <div class="row"><dt>Instrumento</dt><dd id="instr-2">NQ</dd></div>
+        <div class="row"><dt>Contratos</dt><dd id="contratos-2">15</dd></div>
+        <div class="row"><dt>Ticks</dt><dd id="ticks-2">66</dd></div>
+        <div class="row total"><dt>Puntos</dt><dd id="puntos-2">16.50</dd></div>
+      </dl>
+    </article>
+
+    <article class="card filtro-card" data-filtro="3">
+      <h3>Filtro 3</h3>
+      <div class="field">
+        <label for="usd-3">USD</label>
+        <input id="usd-3" type="number" inputmode="decimal" min="0" step="any" value="8000">
+      </div>
+      <dl class="results">
+        <div class="row"><dt>Instrumento</dt><dd id="instr-3">NQ</dd></div>
+        <div class="row"><dt>Contratos</dt><dd id="contratos-3">15</dd></div>
+        <div class="row"><dt>Ticks</dt><dd id="ticks-3">106</dd></div>
+        <div class="row total"><dt>Puntos</dt><dd id="puntos-3">26.50</dd></div>
+      </dl>
+    </article>
+  </section>
+
+  <p class="formula-note">ticks = USD / (tickValue &times; contratos) &middot; NQ=$5 MNQ=$0.5 &middot; GC=$10 MGC=$1 &middot; CL=$10 MCL=$1 &middot; tick size depende del instrumento</p>
+</div>
+
+<script>
+(function () {
+  var TICK_VALUE = { MNQ: 0.5, NQ: 5, MGC: 1, GC: 10, MCL: 1, CL: 10 };
+  var TICK_SIZE  = { MNQ: 0.25, NQ: 0.25, MGC: 0.1, GC: 0.1, MCL: 0.01, CL: 0.01 };
+  var ASSET_CLASS = { MNQ: 'index', NQ: 'index', MGC: 'gold', GC: 'gold', MCL: 'oil', CL: 'oil' };
+
+  var marketSelect = document.getElementById('market-select');
+  var contractsSelect = document.getElementById('contracts-select');
+  var filtros = [1, 2, 3].map(function (n) {
+    return {
+      usd: document.getElementById('usd-' + n),
+      instr: document.getElementById('instr-' + n),
+      contratos: document.getElementById('contratos-' + n),
+      ticks: document.getElementById('ticks-' + n),
+      puntos: document.getElementById('puntos-' + n),
+      card: document.querySelector('.filtro-card[data-filtro="' + n + '"]')
+    };
+  });
+
+  function recalc() {
+    var instrument = marketSelect.value;
+    var contratos = parseInt(contractsSelect.value, 10);
+    var tickValue = TICK_VALUE[instrument];
+    var tickSize = TICK_SIZE[instrument];
+    var assetClass = ASSET_CLASS[instrument];
+
+    filtros.forEach(function (f) {
+      var usd = parseFloat(f.usd.value);
+      var safeUsd = isFinite(usd) && usd > 0 ? usd : 0;
+      var ticks = contratos > 0 ? Math.floor(safeUsd / (tickValue * contratos)) : 0;
+      var puntos = ticks * tickSize;
+
+      f.instr.textContent = instrument;
+      f.contratos.textContent = contratos;
+      f.ticks.textContent = ticks.toLocaleString('en-US');
+      f.puntos.textContent = puntos.toFixed(2);
+      f.card.dataset.asset = assetClass;
+    });
+  }
+
+  marketSelect.addEventListener('change', recalc);
+  contractsSelect.addEventListener('change', recalc);
+  filtros.forEach(function (f) { f.usd.addEventListener('input', recalc); });
+
+  recalc();
+})();
+</script>
