@@ -1,0 +1,1703 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trading Journal</title>
+<meta name="description" content="Journal de trading personal: plan de negocio, trades reales, backtesting, tareas de mentoría, bitácora emocional y análisis de patrones.">
+<meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Journal">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>
+:root{
+  --bg:#0d1117; --panel:#151b26; --panel2:#1c2433; --line:#2a3445; --text:#e8edf3; --muted:#8d9aab;
+  --accent:#f5a524; --accent-ink:#1b1300; --blue:#6474ff; --pos:#22c55e; --neg:#f05252; --warn:#f59e0b;
+  --pos-bg:rgba(34,197,94,.14); --neg-bg:rgba(240,82,82,.14); --warn-bg:rgba(245,158,11,.14); --blue-bg:rgba(100,116,255,.14);
+  --radius:14px; --shadow:0 6px 24px rgba(0,0,0,.35);
+  color-scheme:dark;
+}
+:root[data-theme="light"]{
+  --bg:#f3f5f9; --panel:#ffffff; --panel2:#f0f3f8; --line:#dde3ec; --text:#18202c; --muted:#5d6b7e;
+  --accent:#e08e00; --accent-ink:#fff; --blue:#4152e6; --pos:#15924a; --neg:#d63636; --warn:#c27803;
+  --pos-bg:rgba(21,146,74,.1); --neg-bg:rgba(214,54,54,.1); --warn-bg:rgba(194,120,3,.12); --blue-bg:rgba(65,82,230,.1);
+  --shadow:0 4px 18px rgba(20,30,50,.08);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--blue)}
+.hidden{display:none!important}
+.muted{color:var(--muted)}
+.pos{color:var(--pos)} .neg{color:var(--neg)} .warn{color:var(--warn)}
+.small{font-size:.85em}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spacer{flex:1}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+
+/* top bar */
+.topbar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:10px 16px calc(0px);}
+.topbar-in{max-width:1320px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.3px}
+.brand .logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--accent),#ff6b3d);display:grid;place-items:center;color:#1b1300;font-weight:900}
+.brand small{display:block;font-weight:500;color:var(--muted);font-size:12px;letter-spacing:0}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-size:13px;cursor:pointer;white-space:nowrap}
+.pill.ok{border-color:color-mix(in srgb,var(--pos) 50%,transparent);color:var(--pos)}
+.pill.bad{border-color:color-mix(in srgb,var(--warn) 60%,transparent);color:var(--warn)}
+.tabs{max-width:1320px;margin:8px auto 0;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:none;padding:10px 14px;border-bottom:3px solid transparent;color:var(--muted);cursor:pointer;white-space:nowrap;font-weight:600}
+.tab.active{color:var(--text);border-bottom-color:var(--accent)}
+main{max-width:1320px;margin:0 auto;padding:18px 16px 110px}
+h2.view-title{margin:0 0 4px;font-size:24px}
+.view-sub{color:var(--muted);margin:0 0 16px}
+
+/* cards */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden;min-width:0}
+.card>header{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--line)}
+.card>header h3{margin:0;font-size:15px;font-weight:700;flex:1;min-width:0}
+.card.collapsed>header{border-bottom:0}
+.card.collapsed>.card-body{display:none}
+.card-body{padding:14px}
+.icon-btn{border:1px solid var(--line);background:var(--panel2);border-radius:9px;min-width:34px;height:34px;display:inline-grid;place-items:center;cursor:pointer;color:var(--muted);padding:0 8px}
+.icon-btn:hover{color:var(--text)}
+.card.collapsed .chev{transform:rotate(-90deg)}
+.chev{transition:transform .15s}
+
+/* buttons & inputs */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--panel2);padding:9px 14px;border-radius:10px;cursor:pointer;font-weight:600;min-height:40px;text-decoration:none;color:var(--text)}
+.btn:hover{filter:brightness(1.08)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.blue{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.danger{color:var(--neg);border-color:color-mix(in srgb,var(--neg) 45%,transparent)}
+.btn.sm{min-height:32px;padding:5px 10px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted);font-weight:600;min-width:0}
+input[type=text],input[type=number],input[type=date],input[type=time],input[type=password],input[type=search],select,textarea{
+  width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 11px;min-height:40px;color:var(--text);font-weight:400;font-size:15px}
+textarea{min-height:90px;resize:vertical;line-height:1.45}
+input:focus,select:focus,textarea:focus{outline:2px solid color-mix(in srgb,var(--accent) 60%,transparent);outline-offset:0;border-color:transparent}
+.fgrid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.fgrid .wide{grid-column:1/-1}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:var(--panel2);cursor:pointer;font-size:13.5px;user-select:none}
+.chip input{display:none}
+.chip:has(input:checked){background:var(--blue-bg);border-color:var(--blue);color:var(--text)}
+.chip.err:has(input:checked){background:var(--neg-bg);border-color:var(--neg)}
+.checklist{display:flex;flex-direction:column;gap:6px}
+.checklist label{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);cursor:pointer;font-size:14px}
+.checklist input{width:20px;height:20px;margin:0;flex:none;accent-color:var(--pos)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:var(--panel2);padding:8px 12px;cursor:pointer;color:var(--muted);font-weight:600}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+details.sec{border:1px solid var(--line);border-radius:12px;margin-bottom:12px;background:var(--panel)}
+details.sec>summary{cursor:pointer;padding:11px 14px;font-weight:700;list-style:none;display:flex;align-items:center;gap:8px}
+details.sec>summary::-webkit-details-marker{display:none}
+details.sec>summary::before{content:"▾";color:var(--muted);transition:transform .15s}
+details.sec:not([open])>summary::before{transform:rotate(-90deg)}
+details.sec>.sec-body{padding:2px 14px 14px}
+
+/* KPIs */
+.kpis{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.kpi{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:11px 12px}
+.kpi .k{font-size:12px;color:var(--muted);font-weight:600}
+.kpi .v{font-size:21px;font-weight:800;margin-top:2px;font-variant-numeric:tabular-nums}
+.kpi .s{font-size:12px;color:var(--muted)}
+
+/* bars */
+.hbars{display:flex;flex-direction:column;gap:7px}
+.hbar{display:grid;grid-template-columns:minmax(80px,140px) 1fr minmax(110px,auto);gap:10px;align-items:center;font-size:13px}
+.hbar .lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbar .track{position:relative;height:16px;background:var(--panel2);border-radius:5px;overflow:hidden}
+.hbar .fill{position:absolute;top:0;bottom:0;border-radius:4px}
+.hbar .fill.p{background:var(--pos)} .hbar .fill.n{background:var(--neg)}
+.hbar .mid{position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--line)}
+.hbar .val{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+svg.chart{width:100%;height:auto;max-height:280px;display:block}
+.empty{padding:26px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px}
+
+/* calendar */
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.cal .h{font-size:11px;color:var(--muted);text-align:center;font-weight:700}
+.cal .d{min-height:62px;border-radius:9px;background:var(--panel2);border:1px solid var(--line);padding:5px;font-size:11px;cursor:default;display:flex;flex-direction:column;justify-content:space-between}
+.cal .d.has{cursor:pointer}
+.cal .d .n{color:var(--muted);font-weight:700}
+.cal .d .p{font-weight:800;font-size:12px;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal .d.out{opacity:.3}
+
+/* lists */
+.day{margin-bottom:16px}
+.day-head{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;padding:10px 14px;background:var(--panel2);border:1px solid var(--line);border-radius:12px 12px 0 0}
+.day-head b{font-size:15px}
+.day-body{border:1px solid var(--line);border-top:0;border-radius:0 0 12px 12px;background:var(--panel)}
+.trade{border-top:1px solid var(--line);padding:11px 14px}
+.trade:first-child{border-top:0}
+.trade-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;cursor:pointer}
+.tag{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid var(--line);background:var(--panel2)}
+.tag.W{background:var(--pos-bg);color:var(--pos);border-color:transparent}
+.tag.L{background:var(--neg-bg);color:var(--neg);border-color:transparent}
+.tag.BE{background:var(--warn-bg);color:var(--warn);border-color:transparent}
+.tag.blue{background:var(--blue-bg);color:var(--blue);border-color:transparent}
+.trade-detail{margin-top:10px;display:none}
+.trade.open .trade-detail{display:block}
+.textblock{white-space:pre-wrap;background:var(--panel2);border-radius:10px;padding:10px 12px;margin:4px 0 10px;font-size:14px}
+.dl{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px 14px;font-size:13.5px;margin-bottom:10px}
+.dl div span{color:var(--muted);display:block;font-size:12px}
+
+/* media */
+.media-grid{display:flex;flex-wrap:wrap;gap:8px}
+.thumb{position:relative;width:118px;height:84px;border-radius:10px;overflow:hidden;background:var(--panel2);border:1px solid var(--line);cursor:zoom-in}
+.thumb img,.thumb video{width:100%;height:100%;object-fit:cover;display:block}
+.thumb .play{position:absolute;inset:0;display:grid;place-items:center;font-size:26px;color:#fff;text-shadow:0 2px 8px #000;pointer-events:none}
+.thumb .x{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;border:0;background:rgba(0,0,0,.7);color:#fff;cursor:pointer;font-size:14px}
+.drop{border:1.5px dashed var(--line);border-radius:12px;padding:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.drop.over{border-color:var(--accent);background:var(--warn-bg)}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:50;background:rgba(5,8,14,.66);display:flex;align-items:flex-start;justify-content:center;padding:24px 12px;overflow-y:auto}
+.modal-box{background:var(--bg);border:1px solid var(--line);border-radius:18px;width:min(920px,100%);box-shadow:var(--shadow);margin:auto 0}
+.modal-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);border-radius:18px 18px 0 0;z-index:2}
+.modal-head h3{margin:0;flex:1;font-size:18px}
+#modalBody{padding:16px}
+.modal-foot{display:flex;gap:10px;justify-content:flex-end;padding:12px 16px;border-top:1px solid var(--line);position:sticky;bottom:0;background:var(--bg);border-radius:0 0 18px 18px;flex-wrap:wrap}
+.lightbox{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:16px}
+.lightbox img,.lightbox video{max-width:100%;max-height:92vh;border-radius:8px}
+.lightbox .close{position:absolute;top:14px;right:14px}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:70;background:var(--panel);border:1px solid var(--line);padding:10px 16px;border-radius:12px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw}
+#toast.show{opacity:1}
+.fab{position:fixed;right:20px;bottom:22px;z-index:30;border-radius:999px;padding:14px 20px;box-shadow:0 8px 24px rgba(0,0,0,.4);font-size:15px}
+
+/* plan */
+.plan-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.plan-title{font-size:30px;font-weight:900;margin:0;letter-spacing:.5px}
+.plan-sub{font-size:20px;font-weight:800;font-style:italic;text-decoration:underline;color:var(--accent)}
+.plan-cols{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));align-items:start}
+.plan-sec .body{font-size:15px}
+.plan-sec .body p{margin:0 0 4px}
+.plan-sec .body ul,.plan-sec .body ol{margin:4px 0 8px;padding-left:22px}
+.plan-sec .body h4{margin:10px 0 4px}
+.reading .plan-sec .body{font-size:19px;line-height:1.6}
+.params{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(170px,1fr))}
+.param{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 11px}
+.param span{display:block;font-size:12px;color:var(--muted);font-weight:600}
+.param b{font-size:17px}
+
+/* today status */
+.light{display:flex;gap:14px;align-items:center;padding:12px 14px;border-radius:12px;border:1px solid var(--line)}
+.light .dot{width:18px;height:18px;border-radius:50%;flex:none}
+.light.go{background:var(--pos-bg)} .light.go .dot{background:var(--pos)}
+.light.stop{background:var(--neg-bg)} .light.stop .dot{background:var(--neg)}
+.light.wait{background:var(--warn-bg)} .light.wait .dot{background:var(--warn)}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table.tbl{border-collapse:collapse;width:100%;font-size:13.5px;font-variant-numeric:tabular-nums}
+.tbl th,.tbl td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+.tbl th{background:var(--panel2);font-size:12px;color:var(--muted);position:sticky;top:0}
+.tbl td.num,.tbl th.num{text-align:right}
+.tbl tr.week td{background:var(--warn-bg);font-weight:700}
+.tbl tr.clickable{cursor:pointer}
+.tbl tr.clickable:hover td{background:var(--panel2)}
+
+/* kanban */
+.kanban{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));align-items:start}
+.kcol{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:10px}
+.kcol h4{margin:4px 6px 10px;display:flex;gap:8px;align-items:center}
+.task{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.task .t{font-weight:700;cursor:pointer}
+.task.done .t{text-decoration:line-through;color:var(--muted)}
+
+/* AI */
+.ai-grid{display:grid;gap:14px;grid-template-columns:minmax(280px,360px) minmax(0,1fr);align-items:start}
+@media (max-width:900px){.ai-grid{grid-template-columns:minmax(0,1fr)}}
+.finding{border-left:4px solid var(--line);background:var(--panel2);border-radius:8px;padding:9px 12px;margin-bottom:8px}
+.finding b{display:block}
+.finding.f-good{border-left-color:var(--pos)} .finding.f-bad{border-left-color:var(--neg)} .finding.f-pat{border-left-color:var(--blue)} .finding.f-leak{border-left-color:var(--warn)}
+.chat{display:flex;flex-direction:column;gap:10px}
+.msg{padding:10px 13px;border-radius:12px;max-width:100%}
+.msg.user{background:var(--blue-bg);align-self:flex-end}
+.msg.assistant{background:var(--panel2)}
+.msg h4{margin:8px 0 4px} .msg p{margin:0 0 6px} .msg ul,.msg ol{margin:4px 0 8px;padding-left:22px}
+.an-item{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);margin-bottom:8px;cursor:pointer}
+.an-item.active{border-color:var(--accent)}
+.banner{padding:10px 14px;border-radius:12px;background:var(--warn-bg);border:1px solid color-mix(in srgb,var(--warn) 40%,transparent);margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+@media (max-width:640px){
+  .hbar{grid-template-columns:80px 1fr;}
+  .hbar .val{grid-column:1/-1;text-align:left;margin-top:-4px}
+  .plan-title{font-size:24px}
+  .cal .d{min-height:48px}
+  .fab{right:14px;bottom:14px}
+}
+@media print{ .topbar,.fab,.icon-btn,.btn{display:none!important} body{background:#fff;color:#000} }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand"><div class="logo">TJ</div><div><span id="brandName">Trading Journal</span><small>Plan · Journal · Backtesting · Mentoría</small></div></div>
+    <div class="spacer"></div>
+    <span class="pill" id="backupPill" data-action="backupPill">Respaldo…</span>
+    <button class="icon-btn" data-action="toggleTheme" title="Tema claro / oscuro" aria-label="Cambiar tema">◐</button>
+  </div>
+  <nav class="tabs" id="tabs"></nav>
+</header>
+<main id="view"></main>
+<button class="btn primary fab hidden" id="fab" data-action="newTradeFab">＋ Trade</button>
+
+<div class="modal hidden" id="modal" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="modalTitle"></h3><button class="icon-btn" data-action="closeModal" aria-label="Cerrar">✕</button></div>
+    <div id="modalBody"></div>
+    <div class="modal-foot" id="modalFoot"></div>
+  </div>
+</div>
+<div class="lightbox hidden" id="lightbox"><button class="btn close" data-action="closeLightbox">✕ Cerrar</button><div id="lbContent"></div></div>
+<div id="toast"></div>
+<input type="file" id="importFile" accept=".json,application/json" class="hidden">
+
+<script>
+'use strict';
+/* =========================================================
+   Utilidades
+   ========================================================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pad = n => String(n).padStart(2, '0');
+const isoOf = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const todayISO = () => isoOf(new Date());
+const nowHM = () => { const d = new Date(); return pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+const num = v => { if (v === '' || v == null) return null; const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : null; };
+const toMin = hm => { if (!hm) return null; const [h, m] = hm.split(':').map(Number); return h * 60 + (m || 0); };
+const minToHM = m => pad(Math.floor(m / 60) % 24) + ':' + pad(Math.round(m % 60));
+const avg = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+const sum = a => a.reduce((x, y) => x + y, 0);
+const DOW = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+const MONTHS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+const dateObj = iso => new Date(iso + 'T12:00:00');
+const dow = iso => dateObj(iso).getDay();
+const fmtDate = iso => { if (!iso) return '—'; const d = dateObj(iso); return d.getDate() + ' ' + MONTHS[d.getMonth()].slice(0, 3) + ' ' + d.getFullYear(); };
+const fmtDateLong = iso => { const d = dateObj(iso); return DOW[d.getDay()] + ' ' + d.getDate() + ' de ' + MONTHS[d.getMonth()] + ' ' + d.getFullYear(); };
+const addDays = (iso, n) => { const d = dateObj(iso); d.setDate(d.getDate() + n); return isoOf(d); };
+function money(x, sign = true) {
+  if (x == null || !isFinite(x)) return '—';
+  const cur = (S && S.settings.currency) || 'USD';
+  const s = Math.abs(x).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return (x < 0 ? '−' : (sign && x > 0 ? '+' : '')) + (cur === 'USD' ? '$' : cur + ' ') + s;
+}
+const fmtR = x => x == null || !isFinite(x) ? '—' : (x > 0 ? '+' : x < 0 ? '−' : '') + Math.abs(x).toFixed(2) + 'R';
+const fmtPct = (x, d = 1) => x == null || !isFinite(x) ? '—' : (x * 100).toFixed(d) + '%';
+const fmtSPct = (x, d = 2) => x == null || !isFinite(x) ? '—' : (x > 0 ? '+' : x < 0 ? '−' : '') + Math.abs(x).toFixed(d) + '%';
+const compact = (x, unit) => unit === 'R' ? fmtR(x) : (x > 0 ? '+' : x < 0 ? '−' : '') + (Math.abs(x) >= 10000 ? (Math.abs(x) / 1000).toFixed(1) + 'k' : Math.round(Math.abs(x)).toLocaleString('es-MX'));
+const fmtU = (x, unit) => unit === '$' ? money(x) : fmtR(x);
+const cls = x => x > 0 ? 'pos' : x < 0 ? 'neg' : '';
+function toast(msg, ms = 2600) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), ms); }
+function download(name, data, type = 'application/json') {
+  const blob = data instanceof Blob ? data : new Blob([data], { type });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+function md(s) {
+  const lines = esc(s || '').split('\n'); let out = '', ul = false, ol = false, sub = false;
+  const closeSub = () => { if (sub) { out += '</ul></li>'; sub = false; } };
+  const close = () => { closeSub(); if (ul) { out += '</ul>'; ul = false; } if (ol) { out += '</ol>'; ol = false; } };
+  for (let l of lines) {
+    l = l.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<i>$2</i>');
+    let m;
+    if ((m = l.match(/^#{1,6}\s+(.*)/))) { close(); out += `<h4>${m[1]}</h4>`; }
+    else if ((m = l.match(/^\s*[-•]\s+(.*)/))) {
+      if (ol) { if (!sub) { out = out.replace(/<\/li>$/, ''); out += '<ul>'; sub = true; } out += `<li>${m[1]}</li>`; }
+      else { if (!ul) { close(); out += '<ul>'; ul = true; } out += `<li>${m[1]}</li>`; }
+    }
+    else if ((m = l.match(/^\s*\d+[.)-]\s+(.*)/))) { closeSub(); if (!ol) { close(); out += '<ol>'; ol = true; } out += `<li>${m[1]}</li>`; }
+    else if (!l.trim()) { if (!ol) close(); }
+    else { close(); out += `<p>${l}</p>`; }
+  }
+  close(); return out;
+}
+
+/* =========================================================
+   Base de datos local (IndexedDB) — guarda todo en el navegador
+   ========================================================= */
+const DB = {
+  db: null,
+  open() {
+    return new Promise((res, rej) => {
+      const rq = indexedDB.open('trading-journal', 1);
+      rq.onupgradeneeded = () => {
+        const db = rq.result;
+        if (!db.objectStoreNames.contains('kv')) db.createObjectStore('kv');
+        if (!db.objectStoreNames.contains('media')) db.createObjectStore('media', { keyPath: 'id' });
+      };
+      rq.onsuccess = () => { this.db = rq.result; res(); };
+      rq.onerror = () => rej(rq.error);
+    });
+  },
+  tx(store, mode, fn) {
+    return new Promise((res, rej) => {
+      const t = this.db.transaction(store, mode); const s = t.objectStore(store); let out;
+      const r = fn(s); if (r) r.onsuccess = () => { out = r.result; };
+      t.oncomplete = () => res(out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error);
+    });
+  },
+  get(store, key) { return this.tx(store, 'readonly', s => s.get(key)); },
+  put(store, val, key) { return this.tx(store, 'readwrite', s => key === undefined ? s.put(val) : s.put(val, key)); },
+  del(store, key) { return this.tx(store, 'readwrite', s => s.delete(key)); },
+  all(store) { return this.tx(store, 'readonly', s => s.getAll()); },
+  keys(store) { return this.tx(store, 'readonly', s => s.getAllKeys()); },
+  clear(store) { return this.tx(store, 'readwrite', s => s.clear()); },
+};
+
+/* =========================================================
+   Estado por defecto (incluye tu Plan de Negocio)
+   ========================================================= */
+const DEFAULT_RULES = [
+  'Estaba en zona (Mensual / Semanal / D1 / H4 / H1) dentro de mi horario',
+  'Dirección clara (si no estoy seguro, no hago nada)',
+  'Revisé zonas próximas, divergencias y liquidez',
+  'Gráfico limpio',
+  'Ciclos H1 y H4 alineados con los ciclos LTF',
+  'Confirmación válida (MSS / toma de liquidez / trampa / BOS con la 55 M5)',
+  'SL puesto inmediatamente (≤ 50 puntos según estructura)',
+  'TP puesto',
+  'Riesgo ≤ 1.5% (3 posiciones de 0.5%)',
+  'Dentro del horario 5:30 – 10:00 AM',
+  'Respeté la espera de 90 min y el máximo de 2 trades',
+  'BE a 80–100 puntos y gestión según el plan',
+];
+const DEFAULT_SECTIONS = [
+  { col: 1, title: 'Riesgo y entrada', body:
+`**RIESGO = 1.50%**
+**ENTRADA =** 3 posiciones de 0.5% con 50 puntos de SL o menos según la estructura.
+
+- Cuenta 20K: 2 lotes — anzuelo = 0.1 lote
+- Cuenta 200K: 20 lotes — anzuelo = 1 lote
+- *Tirar anzuelo y vigilar: si va bien, meter las buenas operaciones. Si va mal, esperar mejor timing.*` },
+  { col: 1, title: 'Tiempos y bloqueos', body:
+`- Tiempo de espera de trade a trade = **90 minutos**
+- **Máximo 2 trades al día**
+- Al pegar 1 SL: las apps (TV y MT4) se bloquean 90 minutos — no abrirlas para ver nada.
+- Al pegar 2 SL: las apps se mantienen bloqueadas hasta las 6:30 PM.
+- Después de un TP2 o TP3: quedarse sin operar hasta la próxima sesión (apps bloqueadas hasta 6:30 PM).` },
+  { col: 1, title: 'Horario', body: `**5:30 AM – 10:00 AM**` },
+  { col: 1, title: 'Reglas de salida', body:
+`- TP1 100 puntos (ganancia 1) — ratio 2
+- TP2 200 puntos (ganancia 2) — ratio 4
+- TP3 300 puntos (ganancia 3) — ratio 6
+
+Ratio medio = 1:4 · Ganancia media = 2 · Ganancia total = 6%` },
+  { col: 1, title: 'Gestión (Break Even)', body:
+`- Poner BE a 80–100 puntos
+- Al TP1: las dos restantes a +40 puntos (1 + 0.40 = 1.40)
+- Al TP2: la última restante a +100 puntos (3 + 1 = 4)
+- A 250 puntos: la última mover a +150 puntos (3 + 1.5 = 4.5)
+- 300 puntos = 6%` },
+  { col: 2, title: 'Reglas específicas — dónde son las entradas y con qué confirmaciones', body:
+`1. Identifica la zona donde está en tu horario. Necesitas estar en zona Mensual – Semanal – D1 – H4 – H1.
+2. Después de identificar la zona, toma la decisión de tu dirección. **Si no estás seguro, no hagas nada.**
+- A. Revisar tus zonas próximas en ese rango de horario.
+- B. Revisar divergencias, liquidez.
+3. Mantén tu gráfico lo más limpio posible.
+4. Espera a que el precio esté en tu zona.
+- A. Espera que los ciclos de H1 y H4 estén alineados.
+5. Espera confirmaciones a favor de tu dirección.
+- A. Espera que los ciclos de H4–H1 se alineen con los ciclos LTF.
+6. Confirmaciones:
+- A. Romper estructuras M5 – M1 – mínimo (Market Structure Shift).
+- B. Tomar liquidez y romper las estructuras.
+- C. Hacer trampa y romper estructuras.
+- D. Precio por debajo o por encima de la 55 – M5 – haga BOS.
+7. Ejecuta tu operación.
+- A. Pon SL inmediatamente.
+- B. Pon TP.
+- C. Si el SL según tu estructura y confirmaciones no tiene sentido hasta los 60 o 40 puntos, redúcelo para mitigar pérdidas.
+8. Gestiona tus operaciones.` },
+];
+function defaultState() {
+  const acc = uid();
+  return {
+    version: 1,
+    settings: {
+      traderName: '', currency: 'USD', instrument: 'NAS100', beThreshold: 0,
+      accounts: [{ id: acc, name: 'Cuenta principal', initial: 20000, type: 'Fondeo' }],
+      emotions: ['Calma', 'Confianza', 'Paciencia', 'Enfoque', 'Miedo', 'Ansiedad', 'Duda', 'FOMO', 'Euforia', 'Frustración', 'Venganza', 'Aburrimiento', 'Cansancio'],
+      negEmotions: ['Miedo', 'Ansiedad', 'Duda', 'FOMO', 'Euforia', 'Frustración', 'Venganza', 'Aburrimiento', 'Cansancio'],
+      errorTags: ['Moví el stop', 'Entré sin confirmación', 'Fuera de horario', 'No esperé 90 min', 'Más de 2 trades', 'Aumenté lotaje por emoción', 'No borré órdenes pendientes', 'Operé después de TP2/TP3', 'Cerré antes por miedo', 'Sin SL inmediato', 'Revancha', 'FOMO / perseguí el precio', 'No estaba en zona', 'Gráfico sobrecargado'],
+      setups: ['MSS (ruptura M5/M1)', 'Toma de liquidez + ruptura', 'Trampa + ruptura', 'BOS con la 55 M5', 'Reversión tras toma de liquidez', 'Otro'],
+      zones: ['Mensual', 'Semanal', 'D1', 'H4', 'H1'],
+      btRisks: [1, 1.5, 2],
+      hiddenTabs: {}, hiddenCards: {}, collapsed: {},
+      theme: 'dark',
+      ai: { apiKey: '', model: 'claude-opus-5-5' },
+    },
+    plan: {
+      title: 'PLAN DE NEGOCIO', subtitle: 'KING NQ', rulesDate: '2023-06-14', updated: new Date().toISOString(),
+      params: { riskPct: 1.5, positions: 3, slPoints: 50, maxTrades: 2, waitMin: 90, sessionStart: '05:30', sessionEnd: '10:00', lockUntil: '18:30', stopAfterR: 4 },
+      sections: DEFAULT_SECTIONS.map(s => ({ id: uid(), ...s })),
+      rules: DEFAULT_RULES.map(t => ({ id: uid(), text: t })),
+      versions: [],
+    },
+    trades: [], tasks: [], logbook: [], analyses: [], planReads: {},
+    ui: {
+      tab: 'dashboard',
+      dash: { mode: 'real', account: 'all', period: '3m', from: '', to: '' },
+      real: { account: 'all', from: '', to: '', outcome: 'all', q: '' },
+      bt: { month: 'all', q: '' },
+      tasks: { q: '' },
+      cal: '', aiOpen: null, planEdit: false, planRead: false,
+    },
+  };
+}
+let S = null;
+function migrate(s) {
+  const d = defaultState();
+  for (const k of Object.keys(d)) if (s[k] === undefined) s[k] = d[k];
+  for (const k of Object.keys(d.settings)) if (s.settings[k] === undefined) s.settings[k] = d.settings[k];
+  for (const k of Object.keys(d.ui)) if (s.ui[k] === undefined) s.ui[k] = d.ui[k];
+  for (const k of Object.keys(d.plan.params)) if (s.plan.params[k] === undefined) s.plan.params[k] = d.plan.params[k];
+  if (!s.settings.ai) s.settings.ai = d.settings.ai;
+  return s;
+}
+async function save() {
+  S.savedAt = new Date().toISOString();
+  try { await DB.put('kv', S, 'state'); } catch (e) { console.error(e); toast('⚠ No se pudo guardar: ' + e.message, 5000); }
+  scheduleBackup();
+}
+
+/* =========================================================
+   Archivos (fotos / videos)
+   ========================================================= */
+const urlCache = new Map();
+async function storeFiles(files) {
+  const ids = [];
+  for (const f of files) {
+    const id = uid();
+    const ext = (f.type.split('/')[1] || 'bin').replace('jpeg', 'jpg').replace('quicktime', 'mov');
+    await DB.put('media', { id, blob: f, name: f.name || ('captura-' + id + '.' + ext), type: f.type || 'application/octet-stream', size: f.size, created: new Date().toISOString() });
+    ids.push(id);
+  }
+  return ids;
+}
+async function mediaInfo(id) {
+  if (urlCache.has(id)) return urlCache.get(id);
+  const m = await DB.get('media', id); if (!m) return null;
+  const info = { url: URL.createObjectURL(m.blob), type: m.type || '', name: m.name };
+  urlCache.set(id, info); return info;
+}
+async function deleteMedia(ids) { for (const id of ids || []) { try { await DB.del('media', id); } catch (e) { } const c = urlCache.get(id); if (c) URL.revokeObjectURL(c.url); urlCache.delete(id); } }
+function mediaGrid(ids) { return ids && ids.length ? `<div class="media-grid" data-media="${ids.join(',')}"></div>` : ''; }
+async function hydrateMedia(root = document) {
+  for (const g of $$('[data-media]', root)) {
+    if (g.dataset.done) continue; g.dataset.done = '1';
+    const ids = g.dataset.media.split(',').filter(Boolean);
+    for (const id of ids) {
+      const m = await mediaInfo(id); if (!m) continue;
+      const isV = m.type.startsWith('video');
+      const el = document.createElement('div'); el.className = 'thumb'; el.dataset.action = 'openMedia'; el.dataset.id = id; el.title = m.name;
+      el.innerHTML = isV ? `<video src="${m.url}" preload="metadata" muted playsinline></video><div class="play">▶</div>` : (m.type.startsWith('image') ? `<img src="${m.url}" alt="${esc(m.name)}" loading="lazy">` : `<div class="play" style="font-size:13px;color:var(--text)">📄 ${esc(m.name)}</div>`);
+      g.appendChild(el);
+    }
+  }
+}
+async function openMedia(id) {
+  const m = await mediaInfo(id); if (!m) return;
+  const c = $('#lbContent');
+  if (m.type.startsWith('video')) c.innerHTML = `<video src="${m.url}" controls autoplay playsinline></video>`;
+  else if (m.type.startsWith('image')) c.innerHTML = `<img src="${m.url}" alt="">`;
+  else { download(m.name, (await DB.get('media', id)).blob); return; }
+  $('#lightbox').classList.remove('hidden');
+}
+
+/* Editor de archivos dentro de formularios */
+const ME = { ids: [], pending: [] };
+function mediaEditor(ids) {
+  ME.ids = [...(ids || [])]; ME.pending = [];
+  return `<div class="drop" id="dropZone">
+      <label class="btn sm">📷 Fotos / videos<input type="file" id="mediaInput" accept="image/*,video/*,application/pdf" multiple class="hidden"></label>
+      <span class="muted small">También puedes arrastrar archivos aquí o pegar una captura (Ctrl+V).</span>
+    </div><div class="media-grid" id="meGrid" style="margin-top:8px"></div>`;
+}
+async function renderME() {
+  const g = $('#meGrid'); if (!g) return; g.innerHTML = '';
+  for (const id of ME.ids) {
+    const m = await mediaInfo(id); if (!m) continue;
+    g.insertAdjacentHTML('beforeend', thumbHTML(m.url, m.type, `data-rm-id="${id}"`));
+  }
+  ME.pending.forEach((p, i) => g.insertAdjacentHTML('beforeend', thumbHTML(p.url, p.file.type, `data-rm-p="${i}"`)));
+}
+function thumbHTML(url, type, rm) {
+  const v = (type || '').startsWith('video');
+  return `<div class="thumb">${v ? `<video src="${url}" preload="metadata" muted playsinline></video><div class="play">▶</div>` : (type || '').startsWith('image') ? `<img src="${url}" alt="">` : `<div class="play" style="font-size:12px;color:var(--text)">📄</div>`}<button type="button" class="x" ${rm} aria-label="Quitar">✕</button></div>`;
+}
+function addPending(files) { for (const f of files) ME.pending.push({ file: f, url: URL.createObjectURL(f) }); renderME(); }
+function bindME() {
+  const inp = $('#mediaInput'), dz = $('#dropZone'), g = $('#meGrid'); if (!inp) return;
+  inp.onchange = () => { addPending([...inp.files]); inp.value = ''; };
+  dz.ondragover = e => { e.preventDefault(); dz.classList.add('over'); };
+  dz.ondragleave = () => dz.classList.remove('over');
+  dz.ondrop = e => { e.preventDefault(); dz.classList.remove('over'); addPending([...e.dataTransfer.files]); };
+  g.onclick = e => {
+    const b = e.target.closest('.x'); if (!b) return;
+    if (b.dataset.rmId) { ME.ids = ME.ids.filter(x => x !== b.dataset.rmId); ME.removed = [...(ME.removed || []), b.dataset.rmId]; }
+    else { const p = ME.pending.splice(+b.dataset.rmP, 1)[0]; if (p) URL.revokeObjectURL(p.url); }
+    renderME();
+  };
+  ME.removed = [];
+  renderME();
+}
+async function commitME() {
+  const newIds = await storeFiles(ME.pending.map(p => p.file));
+  ME.pending.forEach(p => URL.revokeObjectURL(p.url)); ME.pending = [];
+  if (ME.removed && ME.removed.length) await deleteMedia(ME.removed);
+  return [...ME.ids, ...newIds];
+}
+document.addEventListener('paste', e => {
+  if ($('#modal').classList.contains('hidden') || !$('#mediaInput')) return;
+  const files = [...(e.clipboardData?.files || [])].filter(f => f.type.startsWith('image') || f.type.startsWith('video'));
+  if (files.length) { e.preventDefault(); addPending(files); toast('Captura agregada'); }
+});
+
+/* =========================================================
+   Cálculos de trades
+   ========================================================= */
+const tkey = t => t.date + ' ' + (t.time || '00:00') + ' ' + (t.created || '');
+const sortTrades = ts => [...ts].sort((a, b) => tkey(a) < tkey(b) ? -1 : tkey(a) > tkey(b) ? 1 : 0);
+function outcome(t) {
+  if (t.pnl != null) { const th = S.settings.beThreshold || 0; return t.pnl > th ? 'W' : t.pnl < -th ? 'L' : 'BE'; }
+  const r = t.r ?? 0; return r > 0.05 ? 'W' : r < -0.05 ? 'L' : 'BE';
+}
+function unitFor(ts) { const w = ts.filter(t => t.pnl != null).length; return w > 0 && w >= ts.length / 2 ? '$' : 'R'; }
+const val = (t, unit) => unit === '$' ? (t.pnl ?? 0) : (t.r ?? 0);
+function compliance(t) {
+  const rules = S.plan.rules; if (!rules.length || !t.rules) return null;
+  const c = rules.filter(r => t.rules[r.id]).length; if (!c && !t.rulesReviewed) return null;
+  return c / rules.length;
+}
+function accountName(id) { const a = S.settings.accounts.find(a => a.id === id); return a ? a.name : '—'; }
+function filterTrades({ mode = 'real', account = 'all', from = '', to = '' } = {}) {
+  return S.trades.filter(t => (mode === 'both' || t.mode === mode) && (account === 'all' || t.mode !== 'real' || t.accountId === account) && (!from || t.date >= from) && (!to || t.date <= to));
+}
+function computeStats(trades, unit) {
+  const ts = sortTrades(trades); unit = unit || unitFor(ts);
+  let W = 0, L = 0, B = 0, net = 0, gW = 0, gL = 0, eq = 0, peak = 0, dd = 0, cl = 0, ml = 0, cw = 0, mw = 0;
+  const curve = [], winR = [], lossR = [], allR = [];
+  for (const t of ts) {
+    const o = outcome(t), x = val(t, unit);
+    if (o === 'W') { W++; gW += x; cw++; cl = 0; mw = Math.max(mw, cw); }
+    else if (o === 'L') { L++; gL += x; cl++; cw = 0; ml = Math.max(ml, cl); }
+    else B++;
+    net += x; eq += x; peak = Math.max(peak, eq); dd = Math.max(dd, peak - eq); curve.push({ d: t.date, y: eq });
+    if (t.r != null) { allR.push(t.r); if (o === 'W') winR.push(t.r); if (o === 'L') lossR.push(t.r); }
+  }
+  const comp = ts.map(compliance).filter(c => c != null);
+  const days = {}; ts.forEach(t => { days[t.date] = (days[t.date] || 0) + val(t, unit); });
+  const dayVals = Object.values(days);
+  return {
+    unit, n: ts.length, W, L, B, wr: W + L ? W / (W + L) : null, net, avgW: W ? gW / W : null, avgL: L ? gL / L : null,
+    pf: gL ? gW / Math.abs(gL) : (gW > 0 ? Infinity : null), exp: ts.length ? net / ts.length : null, maxDD: dd, maxL: ml, maxW: mw, curve,
+    avgR: avg(allR), avgWinR: avg(winR), avgLossR: avg(lossR), compliance: avg(comp), nComp: comp.length,
+    days: dayVals.length, greenDays: dayVals.filter(v => v > 0).length, bestDay: dayVals.length ? Math.max(...dayVals) : null, worstDay: dayVals.length ? Math.min(...dayVals) : null,
+  };
+}
+function groupStats(trades, keyFn, unit) {
+  const g = {};
+  for (const t of trades) { const keys = [].concat(keyFn(t)).filter(k => k != null && k !== ''); for (const k of keys) (g[k] = g[k] || []).push(t); }
+  return Object.entries(g).map(([k, ts]) => { const W = ts.filter(t => outcome(t) === 'W').length, L = ts.filter(t => outcome(t) === 'L').length; const net = sum(ts.map(t => val(t, unit))); return { key: k, n: ts.length, W, L, wr: W + L ? W / (W + L) : null, net, avg: net / ts.length, trades: ts }; });
+}
+/* balance por cuenta (trades reales) */
+function balances() {
+  const map = {}; const byAcc = {};
+  for (const t of sortTrades(S.trades.filter(t => t.mode === 'real'))) (byAcc[t.accountId] = byAcc[t.accountId] || []).push(t);
+  for (const a of S.settings.accounts) {
+    let b = +a.initial || 0;
+    for (const t of byAcc[a.id] || []) { const before = b; b += t.pnl || 0; map[t.id] = { before, after: b, pct: before ? (t.pnl || 0) / before : null }; }
+    map['acc:' + a.id] = b;
+  }
+  return map;
+}
+/* contexto de cada trade: orden en el día, revancha, etc. */
+function contextFlags(trades) {
+  const P = S.plan.params, flags = {}, groups = {};
+  for (const t of sortTrades(trades)) (groups[t.mode + '|' + (t.accountId || '') + '|' + t.date] = groups[t.mode + '|' + (t.accountId || '') + '|' + t.date] || []).push(t);
+  const neg = new Set(S.settings.negEmotions);
+  for (const ts of Object.values(groups)) {
+    let losses = 0, bigWin = false, prev = null;
+    ts.forEach((t, i) => {
+      const tm = toMin(t.time), prevEnd = prev ? toMin(prev.exitTime || prev.time) : null;
+      const gap = tm != null && prevEnd != null ? tm - prevEnd : null;
+      const c = compliance(t);
+      flags[t.id] = {
+        idx: i + 1,
+        outside: tm != null && (tm < toMin(P.sessionStart) || tm > toMin(P.sessionEnd)),
+        overMax: i + 1 > P.maxTrades,
+        revenge: !!prev && outcome(prev) === 'L' && gap != null && gap < P.waitMin,
+        after2SL: losses >= 2,
+        afterBigWin: bigWin,
+        negEmotion: !!t.emotion && neg.has(t.emotion),
+        lowCompliance: c != null && c < 0.7,
+        bigLoss: t.r != null && t.r < -1.2,
+        afterLoss: !!prev && outcome(prev) === 'L',
+        afterWin: !!prev && outcome(prev) === 'W',
+      };
+      if (outcome(t) === 'L') losses++;
+      if ((t.r != null && t.r >= P.stopAfterR)) bigWin = true;
+      prev = t;
+    });
+  }
+  return flags;
+}
+
+/* =========================================================
+   Motor de análisis (local, gratis, sin internet)
+   ========================================================= */
+const FLAG_INFO = {
+  outside: { label: 'Operar fuera de horario', advice: p => `Opera solo entre ${p.sessionStart} y ${p.sessionEnd}. Pon una alarma de cierre y cierra TV/MT4 al terminar la sesión.` },
+  overMax: { label: 'Sobreoperar (más trades del máximo diario)', advice: p => `Máximo ${p.maxTrades} trades al día: al llegar al límite cierra la plataforma, sin excepciones.` },
+  revenge: { label: `Entrar antes de la espera tras una pérdida (revancha)`, advice: p => `Después de un SL espera ${p.waitMin} minutos sin abrir las apps. Usa un temporizador.` },
+  after2SL: { label: 'Seguir operando después de 2 SL', advice: p => `Con 2 SL en el día, apps bloqueadas hasta las ${p.lockUntil}.` },
+  afterBigWin: { label: 'Seguir operando después de TP2/TP3', advice: () => `Después de un TP2 o TP3, el día terminó: protege la ganancia hasta la próxima sesión.` },
+  negEmotion: { label: 'Operar con emociones negativas', advice: () => `Si antes de entrar sientes miedo, ansiedad, FOMO o ganas de revancha, no operes: respira, relee tu plan y espera la siguiente confirmación.` },
+  lowCompliance: { label: 'Entrar sin cumplir el checklist (< 70%)', advice: () => `Repasa el checklist del plan antes de cada entrada: si falta un punto clave, no hay trade.` },
+  bigLoss: { label: 'Pérdidas mayores a 1.2R (stop movido / sin SL)', advice: () => `No muevas ni amplíes el stop. El SL va puesto inmediatamente y se respeta.` },
+};
+const TAG_ADVICE = {
+  'Moví el stop': 'No muevas el stop en contra. Si dudas, cierra la plataforma después de colocar SL y TP.',
+  'Entré sin confirmación': 'Espera la confirmación del paso 6 (MSS, liquidez, trampa o BOS con la 55 M5) antes de ejecutar.',
+  'Aumenté lotaje por emoción': 'El lotaje se calcula antes de la sesión y no cambia. Escríbelo en un post-it junto a la pantalla.',
+  'No borré órdenes pendientes': 'Al cerrar un trade, revisa y borra órdenes pendientes antes de hacer cualquier otra cosa.',
+  'Cerré antes por miedo': 'Deja trabajar el trade con la gestión del plan (BE a 80–100 pts, parciales en TP1/TP2).',
+  'No estaba en zona': 'Solo opera cuando el precio está en una zona Mensual/Semanal/D1/H4/H1 marcada antes de la sesión.',
+};
+function analyze({ from, to, mode, account }) {
+  const P = S.plan.params;
+  const trades = sortTrades(filterTrades({ mode, account, from, to }));
+  const unit = unitFor(trades);
+  const st = computeStats(trades, unit);
+  const res = { from, to, mode, account, unit, stats: { ...st, curve: undefined }, curve: st.curve.map(p => p.y), good: [], bad: [], patterns: [], leaks: [], recs: [], summary: '', breakdown: {} };
+  if (!trades.length) { res.summary = 'No hay trades en este período. Registra trades o cambia las fechas.'; return res; }
+  const U = x => fmtU(x, unit);
+  const flags = contextFlags(trades);
+  const minN = trades.length >= 20 ? 3 : 2;
+
+  // Desgloses
+  const bd = {
+    'Hora de entrada': groupStats(trades, t => t.time ? t.time.slice(0, 2) + ':00' : null, unit).sort((a, b) => a.key < b.key ? -1 : 1),
+    'Día de la semana': groupStats(trades, t => DOW[dow(t.date)], unit).sort((a, b) => DOW.indexOf(a.key) - DOW.indexOf(b.key)),
+    'Setup / confirmación': groupStats(trades, t => t.setup, unit).sort((a, b) => b.net - a.net),
+    'Emoción antes de entrar': groupStats(trades, t => t.emotion, unit).sort((a, b) => b.net - a.net),
+    'Dirección': groupStats(trades, t => t.direction === 'short' ? 'Corto (venta)' : 'Largo (compra)', unit),
+    'Errores marcados': groupStats(trades, t => t.errors || [], unit).sort((a, b) => a.net - b.net),
+  };
+  res.breakdown = Object.fromEntries(Object.entries(bd).map(([k, arr]) => [k, arr.map(({ trades, ...r }) => r)]));
+
+  // Fugas de rentabilidad (lo que te aleja de ser rentable)
+  const cands = [];
+  for (const f of Object.keys(FLAG_INFO)) cands.push({ key: f, label: FLAG_INFO[f].label, ts: trades.filter(t => flags[t.id][f]), advice: FLAG_INFO[f].advice(P) });
+  for (const tag of S.settings.errorTags) cands.push({ key: 'tag:' + tag, label: 'Error: ' + tag, ts: trades.filter(t => (t.errors || []).includes(tag)), advice: TAG_ADVICE[tag] || `Trabaja el error "${tag}": anota en la bitácora qué lo provocó y crea una regla concreta para evitarlo.` });
+  for (const c of cands) {
+    if (!c.ts.length) continue;
+    const net = sum(c.ts.map(t => val(t, unit)));
+    const W = c.ts.filter(t => outcome(t) === 'W').length, L = c.ts.filter(t => outcome(t) === 'L').length;
+    const sig = c.ts.map(t => t.id).sort().join(',');
+    if (net < 0 && !res.leaks.some(l => l.sig === sig)) res.leaks.push({ sig, label: c.label, n: c.ts.length, net, wr: W + L ? W / (W + L) : null, advice: c.advice, without: st.net - net });
+  }
+  // fusionar duplicados obvios (misma cifra/mismo n)
+  res.leaks.sort((a, b) => a.net - b.net);
+  const clean = trades.filter(t => { const f = flags[t.id]; return !Object.keys(FLAG_INFO).some(k => f[k]) && !(t.errors || []).length; });
+  const cleanNet = sum(clean.map(t => val(t, unit)));
+  const dirty = trades.filter(t => !clean.includes(t)), dirtyNet = sum(dirty.map(t => val(t, unit)));
+
+  // Fortalezas / debilidades
+  const wr = st.wr ?? 0;
+  if (st.wr != null && st.wr >= 0.5) res.good.push({ t: `Win rate sólido: ${fmtPct(st.wr)}`, d: `Ganas ${st.W} de cada ${st.W + st.L} trades con resultado.` });
+  if (st.pf != null && st.pf >= 1.5) res.good.push({ t: `Profit factor de ${st.pf === Infinity ? '∞' : st.pf.toFixed(2)}`, d: 'Tus ganancias superan claramente tus pérdidas.' });
+  if (st.avgWinR != null && st.avgWinR >= 2) res.good.push({ t: `Dejas correr las ganancias: ${fmtR(st.avgWinR)} por trade ganador`, d: 'Estás cerca del ratio medio de tu plan (1:4).' });
+  if (st.avgLossR != null && st.avgLossR >= -1.05) res.good.push({ t: 'Respetas el stop', d: `Pérdida media de ${fmtR(st.avgLossR)} — no amplías el riesgo.` });
+  if (clean.length >= minN && cleanNet > 0) res.good.push({ t: `Cuando sigues el plan, ganas: ${U(cleanNet)} en ${clean.length} trades limpios`, d: 'Los trades sin errores ni violaciones de reglas son tu ventaja real.' });
+  const comp = trades.filter(t => compliance(t) != null);
+  if (comp.length >= minN * 2) {
+    const hi = comp.filter(t => compliance(t) >= 0.85), lo = comp.filter(t => compliance(t) < 0.85);
+    if (hi.length >= minN && lo.length >= minN) {
+      const ah = avg(hi.map(t => val(t, unit))), al = avg(lo.map(t => val(t, unit)));
+      if (ah > al) res.patterns.push({ t: 'Cumplir el checklist mejora tus resultados', d: `Con ≥85% del checklist: promedio ${U(ah)} por trade (${hi.length} trades). Con menos: ${U(al)} (${lo.length} trades).` });
+    }
+  }
+  if (st.wr != null && st.wr < 0.4) res.bad.push({ t: `Win rate bajo: ${fmtPct(st.wr)}`, d: 'Revisa si estás entrando sin todas las confirmaciones o fuera de zona.' });
+  if (st.pf != null && st.pf < 1) res.bad.push({ t: `Profit factor menor a 1 (${st.pf.toFixed(2)})`, d: 'En este período las pérdidas superan a las ganancias.' });
+  if (st.avgWinR != null && st.avgWinR < 1.5) res.bad.push({ t: `Ganancias pequeñas: ${fmtR(st.avgWinR)} por trade ganador`, d: 'Tu plan apunta a TP1 = 2R y ratio medio 1:4. ¿Estás cerrando antes por miedo?' });
+  if (st.avgLossR != null && st.avgLossR < -1.1) res.bad.push({ t: `Pérdidas mayores al riesgo planeado: ${fmtR(st.avgLossR)} promedio`, d: 'Indica stops movidos, entradas sin SL o lotaje mayor al plan.' });
+  if (st.maxL >= 4) res.bad.push({ t: `Racha de ${st.maxL} pérdidas seguidas`, d: 'Después de 2 pérdidas seguidas, para y revisa en la bitácora antes del siguiente trade.' });
+  if (st.net > 0 && st.bestDay != null && st.bestDay > st.net * 0.6 && st.days >= 5) res.bad.push({ t: 'Dependes de un solo día', d: `Tu mejor día (${U(st.bestDay)}) es más del 60% del resultado total. La consistencia aún no está consolidada.` });
+
+  const best = (arr) => arr.filter(g => g.n >= minN).sort((a, b) => b.net - a.net);
+  for (const [name, arr] of Object.entries(bd)) {
+    if (name === 'Errores marcados' || name === 'Dirección') continue;
+    const s = best(arr); if (s.length < 2) continue;
+    const top = s[0], bot = s[s.length - 1];
+    if (top.net > 0) res.good.push({ t: `${name}: mejor = ${top.key}`, d: `${top.n} trades, ${U(top.net)}, win rate ${fmtPct(top.wr)}.` });
+    if (bot.net < 0) res.bad.push({ t: `${name}: peor = ${bot.key}`, d: `${bot.n} trades, ${U(bot.net)}, win rate ${fmtPct(bot.wr)}.` });
+  }
+  const dir = bd['Dirección'].filter(g => g.n >= minN);
+  if (dir.length === 2 && Math.abs((dir[0].wr ?? 0) - (dir[1].wr ?? 0)) >= 0.15) {
+    const [a, b] = dir.sort((x, y) => (y.wr ?? 0) - (x.wr ?? 0));
+    res.patterns.push({ t: `Te va mejor en ${a.key.toLowerCase()}`, d: `${a.key}: ${fmtPct(a.wr)} win rate (${U(a.net)}) vs ${b.key}: ${fmtPct(b.wr)} (${U(b.net)}).` });
+  }
+  // comportamiento después de perder / ganar
+  const aL = trades.filter(t => flags[t.id].afterLoss), aW = trades.filter(t => flags[t.id].afterWin);
+  if (aL.length >= minN) {
+    const s = computeStats(aL, unit);
+    if (s.wr != null && s.wr < wr - 0.12) res.patterns.push({ t: 'Después de una pérdida, tu rendimiento cae', d: `Win rate después de perder: ${fmtPct(s.wr)} (general ${fmtPct(wr)}), resultado ${U(s.net)} en ${aL.length} trades. Señal de operar en caliente.` });
+    else if (s.wr != null && s.wr >= wr) res.good.push({ t: 'Te recuperas bien después de una pérdida', d: `Win rate después de perder: ${fmtPct(s.wr)}.` });
+  }
+  if (aW.length >= minN) {
+    const s = computeStats(aW, unit);
+    if (s.net < 0) res.patterns.push({ t: 'Devuelves ganancias después de ganar', d: `Los trades tomados después de un ganador suman ${U(s.net)} (${aW.length} trades). Considera cerrar el día tras el primer buen trade.` });
+  }
+  // nivel emocional
+  const hiE = trades.filter(t => (t.emotionLevel || 0) >= 4), loE = trades.filter(t => t.emotionLevel && t.emotionLevel <= 2);
+  if (hiE.length >= minN && loE.length >= minN) {
+    const a = avg(hiE.map(t => val(t, unit))), b = avg(loE.map(t => val(t, unit)));
+    res.patterns.push({ t: a < b ? 'La intensidad emocional alta te cuesta' : 'Operas bien incluso con intensidad emocional', d: `Intensidad 4–5: ${U(a)} por trade (${hiE.length}). Intensidad 1–2: ${U(b)} por trade (${loE.length}).` });
+  }
+  // primer trade del día vs resto
+  const first = trades.filter(t => flags[t.id].idx === 1), rest = trades.filter(t => flags[t.id].idx > 1);
+  if (first.length >= minN && rest.length >= minN) {
+    const a = sum(first.map(t => val(t, unit))), b = sum(rest.map(t => val(t, unit)));
+    if (b < 0 && a > 0) res.patterns.push({ t: 'Tu primer trade del día es el bueno', d: `Primer trade: ${U(a)} (${first.length}). Siguientes: ${U(b)} (${rest.length}). Menos trades = más rentabilidad.` });
+  }
+  // backtest vs real
+  if (mode !== 'backtest') {
+    const bt = filterTrades({ mode: 'backtest', from, to }), re = filterTrades({ mode: 'real', account, from, to });
+    if (bt.length >= minN && re.length >= minN) {
+      const sb = computeStats(bt, 'R'), sr = computeStats(re, 'R');
+      if (sb.wr != null && sr.wr != null) {
+        const gap = sb.wr - sr.wr;
+        if (gap >= 0.1) res.patterns.push({ t: 'Brecha de ejecución: el backtesting rinde más que la cuenta real', d: `Win rate backtesting ${fmtPct(sb.wr)} vs real ${fmtPct(sr.wr)}. La estrategia funciona; la diferencia está en la ejecución y las emociones.` });
+        else res.good.push({ t: 'Tu ejecución real se parece a tu backtesting', d: `Backtesting ${fmtPct(sb.wr)} vs real ${fmtPct(sr.wr)} de win rate.` });
+      }
+    }
+  }
+  // calidad del journal
+  const noEmo = trades.filter(t => !t.emotion).length, noComp = trades.filter(t => compliance(t) == null).length, noShot = trades.filter(t => !(t.media || []).length).length;
+  if (noEmo / trades.length > 0.4 || noComp / trades.length > 0.4) res.patterns.push({ t: 'Completa más tu journal para un mejor análisis', d: `${noEmo} trades sin emoción registrada, ${noComp} sin checklist, ${noShot} sin captura.` });
+
+  // Recomendaciones
+  res.leaks.slice(0, 4).forEach(l => res.recs.push(l.advice));
+  if (st.avgWinR != null && st.avgWinR < 1.5) res.recs.push('Respeta TP1 (100 pts) y la gestión de BE del plan antes de cerrar manualmente.');
+  if (!res.recs.length) res.recs.push('Sigue haciendo exactamente lo mismo: tu proceso está funcionando. Mantén el journal completo para detectar cambios a tiempo.');
+  res.recs = [...new Set(res.recs)];
+
+  // Diagnóstico
+  const top = res.leaks[0];
+  res.summary = `Del ${fmtDate(from || trades[0].date)} al ${fmtDate(to || trades[trades.length - 1].date)}: ${st.n} trades en ${st.days} días, win rate ${fmtPct(st.wr)}, resultado ${U(st.net)}` +
+    (st.pf != null ? `, profit factor ${st.pf === Infinity ? '∞' : st.pf.toFixed(2)}` : '') + '.' +
+    (top ? ` Lo que más te aleja de la rentabilidad: **${top.label.toLowerCase()}** (${top.n} trades, ${U(top.net)}).` : ' No se detectaron fugas importantes.') +
+    (dirty.length && clean.length ? ` Trades limpios (siguiendo el plan): ${U(cleanNet)}; trades con errores o reglas rotas: ${U(dirtyNet)}.` : '');
+  res.cleanNet = cleanNet; res.dirtyNet = dirtyNet; res.nClean = clean.length; res.nDirty = dirty.length;
+  return res;
+}
+
+/* =========================================================
+   Gráficos simples
+   ========================================================= */
+function lineChart(ys, unit, labels) {
+  if (!ys || ys.length < 2) return `<div class="empty">Necesitas al menos 2 trades para ver la curva.</div>`;
+  const W = 720, H = 220, pl = 64, pr = 12, pt = 12, pb = 26;
+  const data = [0, ...ys];
+  const min = Math.min(...data), max = Math.max(...data), rng = (max - min) || 1;
+  const sx = i => pl + i / (data.length - 1) * (W - pl - pr), sy = y => pt + (1 - (y - min) / rng) * (H - pt - pb);
+  const d = data.map((y, i) => (i ? 'L' : 'M') + sx(i).toFixed(1) + ' ' + sy(y).toFixed(1)).join(' ');
+  const col = data[data.length - 1] >= 0 ? 'var(--pos)' : 'var(--neg)';
+  const area = d + ` L${sx(data.length - 1).toFixed(1)} ${sy(Math.max(min, Math.min(0, max))).toFixed(1)} L${sx(0)} ${sy(Math.max(min, Math.min(0, max))).toFixed(1)} Z`;
+  const ticks = [max, (max + min) / 2, min].map(v => `<text x="${pl - 8}" y="${sy(v) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${esc(fmtU(v, unit).replace('+', ''))}</text><line x1="${pl}" x2="${W - pr}" y1="${sy(v)}" y2="${sy(v)}" stroke="var(--line)" stroke-dasharray="3 4"/>`).join('');
+  const zero = min < 0 && max > 0 ? `<line x1="${pl}" x2="${W - pr}" y1="${sy(0)}" y2="${sy(0)}" stroke="var(--muted)" stroke-width="1"/>` : '';
+  const lab = labels && labels.length ? `<text x="${pl}" y="${H - 6}" font-size="11" fill="var(--muted)">${esc(labels[0])}</text><text x="${W - pr}" y="${H - 6}" font-size="11" fill="var(--muted)" text-anchor="end">${esc(labels[labels.length - 1])}</text>` : '';
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Curva de resultados">${ticks}${zero}<path d="${area}" fill="${col}" opacity=".12"/><path d="${d}" fill="none" stroke="${col}" stroke-width="2.4" stroke-linejoin="round"/>${lab}</svg>`;
+}
+function hbars(rows, unit) {
+  rows = rows.filter(r => r.n);
+  if (!rows.length) return `<div class="empty">Sin datos todavía.</div>`;
+  const maxAbs = Math.max(...rows.map(r => Math.abs(r.net))) || 1, hasNeg = rows.some(r => r.net < 0);
+  return `<div class="hbars">${rows.map(r => {
+    const w = Math.abs(r.net) / maxAbs * (hasNeg ? 50 : 100);
+    const style = hasNeg ? (r.net >= 0 ? `left:50%;width:${w}%` : `left:${50 - w}%;width:${w}%`) : `left:0;width:${w}%`;
+    return `<div class="hbar"><span class="lbl" title="${esc(r.key)}">${esc(r.key)}</span><div class="track">${hasNeg ? '<div class="mid"></div>' : ''}<div class="fill ${r.net >= 0 ? 'p' : 'n'}" style="${style}"></div></div><span class="val"><b class="${cls(r.net)}">${fmtU(r.net, unit)}</b> <span class="muted">· ${r.n}t · ${fmtPct(r.wr, 0)}</span></span></div>`;
+  }).join('')}</div>`;
+}
+
+/* =========================================================
+   Componentes de interfaz
+   ========================================================= */
+function card(key, title, body, extra = '') {
+  if (S.settings.hiddenCards[key]) return '';
+  const col = S.settings.collapsed[key];
+  return `<section class="card ${col ? 'collapsed' : ''}" data-card="${key}"><header><h3>${title}</h3>${extra}
+    <button class="icon-btn" data-action="hideCard" data-key="${key}" data-title="${esc(title.replace(/<[^>]+>/g, ''))}" title="Ocultar esta sección" aria-label="Ocultar">👁</button>
+    <button class="icon-btn" data-action="toggleCard" data-key="${key}" title="Contraer / expandir" aria-label="Contraer"><span class="chev">▾</span></button></header>
+    <div class="card-body">${body}</div></section>`;
+}
+function hiddenBar(prefix) {
+  const h = Object.entries(S.settings.hiddenCards).filter(([k, v]) => v && k.startsWith(prefix));
+  if (!h.length) return '';
+  return `<div class="row" style="margin-bottom:12px"><span class="muted small">Secciones ocultas:</span>${h.map(([k, v]) => `<button class="btn sm" data-action="showCard" data-key="${k}">👁 ${esc(typeof v === 'string' ? v : k)}</button>`).join('')}</div>`;
+}
+const kpi = (k, v, s = '', c = '') => `<div class="kpi"><div class="k">${k}</div><div class="v ${c}">${v}</div>${s ? `<div class="s">${s}</div>` : ''}</div>`;
+const sel = (name, opts, cur, attrs = '') => `<select name="${name}" ${attrs}>${opts.map(o => { const [v, l] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(v)}" ${String(v) === String(cur ?? '') ? 'selected' : ''}>${esc(l)}</option>`; }).join('')}</select>`;
+const accOpts = (all = true) => [...(all ? [['all', 'Todas las cuentas']] : []), ...S.settings.accounts.map(a => [a.id, a.name])];
+function periodRange(p, from, to) {
+  const t = new Date(), T = isoOf(t);
+  if (p === 'week') { const d = new Date(t); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return [isoOf(d), T]; }
+  if (p === 'month') return [isoOf(new Date(t.getFullYear(), t.getMonth(), 1)), T];
+  if (p === 'prevmonth') return [isoOf(new Date(t.getFullYear(), t.getMonth() - 1, 1)), isoOf(new Date(t.getFullYear(), t.getMonth(), 0))];
+  if (p === '3m') return [addDays(T, -91), T];
+  if (p === 'year') return [t.getFullYear() + '-01-01', T];
+  if (p === 'custom') return [from || '', to || ''];
+  return ['', ''];
+}
+const PERIODS = [['week', 'Esta semana'], ['month', 'Este mes'], ['prevmonth', 'Mes pasado'], ['3m', 'Últimos 3 meses'], ['year', 'Este año'], ['all', 'Todo'], ['custom', 'Personalizado']];
+
+/* =========================================================
+   Pestañas
+   ========================================================= */
+const TABS = [
+  ['dashboard', '📊 Resumen'], ['plan', '📘 Plan de negocio'], ['real', '💹 Journal real'], ['backtest', '🧪 Backtesting'],
+  ['tasks', '✅ Tareas mentoría'], ['logbook', '🧠 Bitácora emocional'], ['ai', '🤖 Análisis IA'], ['settings', '⚙️ Ajustes y respaldo'],
+];
+function renderTabs() {
+  const vis = TABS.filter(([k]) => k === 'settings' || !S.settings.hiddenTabs[k]);
+  if (!vis.find(([k]) => k === S.ui.tab)) S.ui.tab = 'dashboard';
+  $('#tabs').innerHTML = vis.map(([k, l]) => `<button class="tab ${S.ui.tab === k ? 'active' : ''}" data-action="tab" data-tab="${k}">${l}</button>`).join('');
+}
+function render() {
+  document.documentElement.dataset.theme = S.settings.theme;
+  $('#brandName').textContent = S.settings.traderName ? 'Journal de ' + S.settings.traderName : 'Trading Journal';
+  renderTabs(); updateBackupPill();
+  const v = { dashboard: vDashboard, plan: vPlan, real: vReal, backtest: vBacktest, tasks: vTasks, logbook: vLog, ai: vAI, settings: vSettings }[S.ui.tab] || vDashboard;
+  $('#view').innerHTML = v();
+  $('#fab').classList.toggle('hidden', !['dashboard', 'real', 'backtest'].includes(S.ui.tab));
+  $('#fab').textContent = S.ui.tab === 'backtest' ? '＋ Backtest' : '＋ Trade';
+  hydrateMedia($('#view'));
+}
+
+/* ---------- Resumen ---------- */
+function todayStatus() {
+  const P = S.plan.params, T = todayISO(), now = toMin(nowHM());
+  const ts = sortTrades(S.trades.filter(t => t.mode === 'real' && t.date === T && (S.ui.dash.account === 'all' || t.accountId === S.ui.dash.account)));
+  const losses = ts.filter(t => outcome(t) === 'L').length, last = ts[ts.length - 1];
+  const reasons = []; let state = 'go';
+  if (ts.some(t => t.r != null && t.r >= P.stopAfterR)) { state = 'stop'; reasons.push('Hiciste TP2/TP3 hoy: el día terminó. Protege la ganancia.'); }
+  if (losses >= 2) { state = 'stop'; reasons.push(`2 SL hoy: apps bloqueadas hasta las ${P.lockUntil}.`); }
+  if (ts.length >= P.maxTrades) { state = 'stop'; reasons.push(`Llegaste al máximo de ${P.maxTrades} trades del día.`); }
+  if (state !== 'stop' && last) {
+    const end = toMin(last.exitTime || last.time), ready = end + P.waitMin;
+    if (now < ready) { state = 'wait'; reasons.push(`${outcome(last) === 'L' ? 'Último trade fue SL. ' : ''}Espera de ${P.waitMin} min: puedes volver a las ${minToHM(ready)}.`); }
+  }
+  if (state === 'go' && (now < toMin(P.sessionStart) || now > toMin(P.sessionEnd))) { state = 'wait'; reasons.push(`Fuera de tu horario (${P.sessionStart}–${P.sessionEnd}).`); }
+  if (state === 'go') reasons.push(`Puedes operar si se cumple todo tu checklist. Trades hoy: ${ts.length}/${P.maxTrades}.`);
+  const title = { go: 'Puedes operar', wait: 'Espera', stop: 'No operes más hoy' }[state];
+  const read = S.planReads[T];
+  let streak = 0; for (let d = T; S.planReads[d]; d = addDays(d, -1)) streak++;
+  return `<div class="light ${state}"><div class="dot"></div><div><b>${title}</b><div class="small">${reasons.map(esc).join('<br>')}</div></div></div>
+   <div class="row" style="margin-top:10px">
+     <button class="btn ${read ? '' : 'primary'}" data-action="markPlanRead">${read ? '✓ Leíste tu plan hoy' : '📘 Leí mi plan de trading hoy'}</button>
+     <button class="btn" data-action="readPlan">Abrir plan en modo lectura</button>
+     <span class="muted small">Racha de lectura: ${streak} día${streak === 1 ? '' : 's'}</span>
+   </div>`;
+}
+function vDashboard() {
+  const D = S.ui.dash; const [from, to] = periodRange(D.period, D.from, D.to);
+  const ts = filterTrades({ mode: D.mode, account: D.account, from, to });
+  const st = computeStats(ts); const U = x => fmtU(x, st.unit);
+  const bal = balances();
+  const accBal = D.mode === 'real' && D.account !== 'all' ? bal['acc:' + D.account] : null;
+  const accInit = D.account !== 'all' ? +(S.settings.accounts.find(a => a.id === D.account)?.initial || 0) : null;
+  const flt = `<div class="row" style="margin-bottom:14px">
+    <div class="seg">${[['real', 'Real'], ['backtest', 'Backtesting'], ['both', 'Ambos']].map(([k, l]) => `<button class="${D.mode === k ? 'on' : ''}" data-action="setUi" data-path="dash.mode" data-value="${k}">${l}</button>`).join('')}</div>
+    ${D.mode !== 'backtest' ? sel('acc', accOpts(), D.account, 'data-change="setUi" data-path="dash.account" style="width:auto"') : ''}
+    ${sel('per', PERIODS, D.period, 'data-change="setUi" data-path="dash.period" style="width:auto"')}
+    ${D.period === 'custom' ? `<input type="date" value="${D.from}" data-change="setUi" data-path="dash.from" style="width:auto"><span class="muted">a</span><input type="date" value="${D.to}" data-change="setUi" data-path="dash.to" style="width:auto">` : ''}
+  </div>`;
+  if (!S.trades.length) {
+    return `<h2 class="view-title">Resumen</h2><p class="view-sub">Tu panel de control. Empieza registrando tu primer trade.</p>
+      ${card('d-today', '🚦 Hoy: ¿puedo operar?', todayStatus())}
+      <div class="card"><div class="card-body"><div class="empty">
+        <p><b>Aún no tienes trades registrados.</b></p>
+        <p>Usa el botón <b>＋ Trade</b> para registrar uno, o carga datos de ejemplo para ver cómo funciona todo (los puedes borrar después).</p>
+        <div class="row" style="justify-content:center"><button class="btn primary" data-action="newTrade" data-mode="real">＋ Registrar trade</button><button class="btn" data-action="loadDemo">Cargar ejemplo</button></div>
+      </div></div></div>`;
+  }
+  const k = `<div class="kpis">
+    ${kpi('Resultado neto', `<span class="${cls(st.net)}">${U(st.net)}</span>`, accInit ? fmtSPct(st.net / accInit * 100) + ' de la cuenta' : `${st.n} trades`)}
+    ${accBal != null ? kpi('Balance actual', money(accBal, false), 'Inicial ' + money(accInit, false)) : ''}
+    ${kpi('Win rate', fmtPct(st.wr), `${st.W}G · ${st.L}P · ${st.B}BE`)}
+    ${kpi('Profit factor', st.pf == null ? '—' : st.pf === Infinity ? '∞' : st.pf.toFixed(2), 'ganancias / pérdidas')}
+    ${kpi('Expectativa', U(st.exp), 'por trade')}
+    ${kpi('R promedio', fmtR(st.avgR), `G ${fmtR(st.avgWinR)} · P ${fmtR(st.avgLossR)}`)}
+    ${kpi('Máx. drawdown', st.unit === '$' ? money(-st.maxDD) : fmtR(-st.maxDD), `racha pérdidas: ${st.maxL}`)}
+    ${kpi('Cumplimiento del plan', fmtPct(st.compliance, 0), `${st.nComp} trades con checklist`)}
+    ${kpi('Días verdes', st.days ? `${st.greenDays}/${st.days}` : '—', st.days ? fmtPct(st.greenDays / st.days, 0) + ' de los días' : '')}
+  </div>`;
+  const by = (fn) => groupStats(ts, fn, st.unit);
+  return `<h2 class="view-title">Resumen</h2><p class="view-sub">Tus números, tus patrones y el semáforo de tus reglas para hoy.</p>
+   ${flt}${hiddenBar('d-')}
+   ${card('d-today', '🚦 Hoy: ¿puedo operar?', todayStatus())}
+   ${card('d-kpi', '📈 Indicadores clave', k)}
+   <div class="grid g2">
+     ${card('d-equity', 'Curva de resultados', lineChart(st.curve.map(p => p.y), st.unit, st.curve.length ? [fmtDate(st.curve[0].d), fmtDate(st.curve[st.curve.length - 1].d)] : []))}
+     ${card('d-cal', 'Calendario', calendar(ts, st.unit))}
+     ${card('d-weekday', 'Por día de la semana', hbars(by(t => DOW[dow(t.date)]).sort((a, b) => DOW.indexOf(a.key) - DOW.indexOf(b.key)), st.unit))}
+     ${card('d-hour', 'Por hora de entrada', hbars(by(t => t.time ? t.time.slice(0, 2) + ':00' : null).sort((a, b) => a.key < b.key ? -1 : 1), st.unit))}
+     ${card('d-setup', 'Por setup / confirmación', hbars(by(t => t.setup).sort((a, b) => b.net - a.net), st.unit))}
+     ${card('d-emotion', 'Por emoción antes de entrar', hbars(by(t => t.emotion).sort((a, b) => b.net - a.net), st.unit))}
+     ${card('d-errors', 'Costo de cada error', hbars(by(t => t.errors || []).sort((a, b) => a.net - b.net), st.unit))}
+   </div>`;
+}
+function calendar(ts, unit) {
+  const months = [...new Set(ts.map(t => t.date.slice(0, 7)))].sort();
+  let m = S.ui.cal || months[months.length - 1] || todayISO().slice(0, 7);
+  const [y, mo] = m.split('-').map(Number);
+  const first = new Date(y, mo - 1, 1), days = new Date(y, mo, 0).getDate(), off = (first.getDay() + 6) % 7;
+  const byDay = {}; ts.forEach(t => { if (t.date.startsWith(m)) { byDay[t.date] = byDay[t.date] || { v: 0, n: 0 }; byDay[t.date].v += val(t, unit); byDay[t.date].n++; } });
+  const maxAbs = Math.max(1e-9, ...Object.values(byDay).map(d => Math.abs(d.v)));
+  let cells = ['L', 'M', 'X', 'J', 'V', 'S', 'D'].map(d => `<div class="h">${d}</div>`).join('');
+  for (let i = 0; i < off; i++) cells += `<div class="d out"></div>`;
+  for (let d = 1; d <= days; d++) {
+    const iso = `${y}-${pad(mo)}-${pad(d)}`, x = byDay[iso];
+    const bg = x ? `background:color-mix(in srgb,${x.v >= 0 ? 'var(--pos)' : 'var(--neg)'} ${Math.round(15 + 45 * Math.abs(x.v) / maxAbs)}%,var(--panel2))` : '';
+    cells += `<div class="d ${x ? 'has' : ''}" style="${bg}" ${x ? `data-action="openDay" data-date="${iso}"` : ''}><span class="n">${d}</span>${x ? `<span class="p">${esc(compact(x.v, unit))}<br><span style="font-weight:500">${x.n}t</span></span>` : ''}</div>`;
+  }
+  const prev = isoOf(new Date(y, mo - 2, 1)).slice(0, 7), next = isoOf(new Date(y, mo, 1)).slice(0, 7);
+  return `<div class="row" style="margin-bottom:8px"><button class="icon-btn" data-action="setUi" data-path="cal" data-value="${prev}">‹</button><b style="text-transform:capitalize">${MONTHS[mo - 1]} ${y}</b><button class="icon-btn" data-action="setUi" data-path="cal" data-value="${next}">›</button></div><div class="cal">${cells}</div>`;
+}
+
+/* ---------- Plan de negocio ---------- */
+function vPlan() {
+  const P = S.plan, p = P.params, ed = S.ui.planEdit, rd = S.ui.planRead;
+  const params = ed ? `<div class="fgrid" id="paramsForm">
+      ${[['riskPct', 'Riesgo total %'], ['positions', 'N.º de posiciones'], ['slPoints', 'SL máx. (puntos)'], ['maxTrades', 'Máx. trades/día'], ['waitMin', 'Espera entre trades (min)'], ['stopAfterR', 'Parar el día al ganar (R)']].map(([k, l]) => `<label class="f">${l}<input type="number" step="any" name="${k}" value="${p[k]}" data-change="planParam"></label>`).join('')}
+      ${[['sessionStart', 'Horario inicio'], ['sessionEnd', 'Horario fin'], ['lockUntil', 'Bloqueo tras 2 SL hasta']].map(([k, l]) => `<label class="f">${l}<input type="time" name="${k}" value="${p[k]}" data-change="planParam"></label>`).join('')}
+    </div>` : `<div class="params">
+      <div class="param"><span>Riesgo</span><b>${p.riskPct}%</b></div><div class="param"><span>Entrada</span><b>${p.positions} × ${(p.riskPct / p.positions).toFixed(2)}%</b></div>
+      <div class="param"><span>SL máximo</span><b>${p.slPoints} pts</b></div><div class="param"><span>Máx. trades/día</span><b>${p.maxTrades}</b></div>
+      <div class="param"><span>Espera entre trades</span><b>${p.waitMin} min</b></div><div class="param"><span>Horario</span><b>${p.sessionStart}–${p.sessionEnd}</b></div>
+      <div class="param"><span>Bloqueo tras 2 SL</span><b>hasta ${p.lockUntil}</b></div><div class="param"><span>Parar al ganar</span><b>${p.stopAfterR}R (TP2)</b></div></div>`;
+  const sec = s => `<div class="card plan-sec"><header><h3>${ed ? `<input type="text" value="${esc(s.title)}" data-change="secTitle" data-id="${s.id}">` : esc(s.title)}</h3>
+     ${ed ? `<button class="icon-btn" data-action="secMove" data-id="${s.id}" data-dir="-1" title="Subir">↑</button><button class="icon-btn" data-action="secMove" data-id="${s.id}" data-dir="1" title="Bajar">↓</button>
+     <button class="icon-btn" data-action="secCol" data-id="${s.id}" title="Cambiar de columna">⇆</button><button class="icon-btn" data-action="secDel" data-id="${s.id}" title="Eliminar">🗑</button>` : ''}</header>
+     <div class="card-body">${ed ? `<textarea rows="8" data-change="secBody" data-id="${s.id}">${esc(s.body)}</textarea><div class="muted small">Usa "- " para viñetas, "1. " para pasos y **texto** para negritas.</div>` : `<div class="body">${md(s.body)}</div>`}</div></div>`;
+  const cols = [1, 2].map(c => `<div>${P.sections.filter(s => (s.col || 1) === c).map(sec).join('')}</div>`).join('');
+  const rules = ed ? `<div id="rulesEd">${P.rules.map(r => `<div class="row" style="margin-bottom:6px"><input type="text" value="${esc(r.text)}" data-change="ruleText" data-id="${r.id}" style="flex:1"><button class="icon-btn" data-action="ruleDel" data-id="${r.id}">🗑</button></div>`).join('')}<button class="btn sm" data-action="ruleAdd">＋ Regla</button></div>`
+    : `<ol style="margin:0;padding-left:22px">${P.rules.map(r => `<li style="margin-bottom:4px">${esc(r.text)}</li>`).join('')}</ol>`;
+  const versions = P.versions.length ? P.versions.slice().reverse().map(v => `<div class="row" style="padding:8px 0;border-bottom:1px solid var(--line)"><b>${fmtDate(v.date.slice(0, 10))}</b><span class="muted">${esc(v.note || '')}</span><span class="spacer"></span><button class="btn sm" data-action="verView" data-id="${v.id}">Ver</button><button class="btn sm" data-action="verRestore" data-id="${v.id}">Restaurar</button></div>`).join('') : '<div class="muted">Aún no guardas versiones. Cada vez que cambies reglas importantes, guarda una versión para ver tu evolución.</div>';
+  return `<div class="${rd ? 'reading' : ''}">
+   <div class="plan-head"><div>
+      ${ed ? `<input type="text" value="${esc(P.title)}" data-change="planField" data-f="title" style="font-size:22px;font-weight:800;margin-bottom:6px"><input type="text" value="${esc(P.subtitle)}" data-change="planField" data-f="subtitle" placeholder="Subtítulo / nombre de la estrategia">
+             <label class="f" style="margin-top:6px">Fecha de las reglas<input type="date" value="${P.rulesDate || ''}" data-change="planField" data-f="rulesDate"></label>`
+      : `<div class="muted small">REGLAS ${P.rulesDate ? fmtDate(P.rulesDate).toUpperCase() : ''} · actualizado ${fmtDate(P.updated.slice(0, 10))}</div><h2 class="plan-title">${esc(P.title)}</h2><div class="plan-sub">${esc(P.subtitle)}</div>`}
+    </div>
+    <div class="row">
+      <button class="btn ${ed ? 'primary' : ''}" data-action="planEdit">${ed ? '✓ Terminar edición' : '✏️ Editar plan'}</button>
+      ${ed ? '' : `<button class="btn" data-action="planReadToggle">${rd ? 'Vista normal' : '🔎 Modo lectura'}</button><button class="btn" data-action="markPlanRead">${S.planReads[todayISO()] ? '✓ Leído hoy' : '📘 Marcar leído hoy'}</button>`}
+      <button class="btn" data-action="verSave">💾 Guardar versión</button><button class="btn" data-action="printPlan">🖨 Imprimir</button>
+    </div></div>
+   ${hiddenBar('p-')}
+   ${card('p-params', 'Parámetros (los usa el semáforo y el análisis)', params)}
+   <div class="plan-cols">${cols}</div>
+   ${ed ? `<div class="row" style="margin-bottom:14px"><button class="btn" data-action="secAdd">＋ Agregar sección</button></div>` : ''}
+   ${card('p-rules', '✅ Checklist antes de cada entrada (se usa en cada trade)', rules)}
+   ${card('p-versions', '🕑 Historial de versiones del plan', versions)}
+  </div>`;
+}
+
+/* ---------- Journal real ---------- */
+function tradeRow(t, bal) {
+  const o = outcome(t), b = bal[t.id], c = compliance(t);
+  const dirL = t.direction === 'short' ? 'Venta' : 'Compra';
+  return `<div class="trade" data-id="${t.id}">
+    <div class="trade-top" data-action="toggleTrade" data-id="${t.id}">
+      <span class="tag ${o}">${o === 'W' ? 'Ganado' : o === 'L' ? 'Perdido' : 'BE'}</span>
+      <b>${esc(t.time || '--:--')}</b><span>${esc(t.instrument || '')} · ${dirL}${t.lots ? ' ' + esc(t.lots) : ''}</span>
+      ${t.setup ? `<span class="tag blue">${esc(t.setup)}</span>` : ''}${t.emotion ? `<span class="tag">${esc(t.emotion)}</span>` : ''}
+      ${(t.errors || []).length ? `<span class="tag L">⚠ ${(t.errors || []).length} error${t.errors.length > 1 ? 'es' : ''}</span>` : ''}
+      ${(t.media || []).length ? `<span class="muted small">📎 ${t.media.length}</span>` : ''}
+      <span class="spacer"></span>
+      ${t.r != null ? `<span class="${cls(t.r)}">${fmtR(t.r)}</span>` : ''}
+      ${t.pnl != null ? `<b class="${cls(t.pnl)}">${money(t.pnl)}</b>` : ''}${b && b.pct != null ? `<span class="muted small">${fmtSPct(b.pct * 100)}</span>` : ''}
+    </div>
+    <div class="trade-detail">
+      <div class="dl">
+        ${t.mode === 'real' ? `<div><span>Cuenta</span>${esc(accountName(t.accountId))}</div>` : ''}
+        <div><span>Entrada → Salida</span>${esc(t.entry ?? '—')} → ${esc(t.exit ?? '—')}</div>
+        <div><span>Horario</span>${esc(t.time || '—')} → ${esc(t.exitTime || '—')}</div>
+        <div><span>SL / TP (pts)</span>${esc(t.slPoints ?? '—')} / ${esc(t.tpPoints ?? '—')}</div>
+        <div><span>Puntos</span>${esc(t.points ?? '—')}</div>
+        <div><span>Zona</span>${esc((t.zones || []).join(', ') || '—')}</div>
+        <div><span>Emoción (antes → después)</span>${esc(t.emotion || '—')}${t.emotionLevel ? ' (' + t.emotionLevel + '/5)' : ''} → ${esc(t.emotionAfter || '—')}</div>
+        <div><span>Cumplimiento del plan</span>${fmtPct(c, 0)}</div>
+        ${b ? `<div><span>Balance</span>${money(b.before, false)} → ${money(b.after, false)}</div>` : ''}
+      </div>
+      ${(t.errors || []).length ? `<div class="chips" style="margin-bottom:10px">${t.errors.map(e => `<span class="tag L">${esc(e)}</span>`).join('')}</div>` : ''}
+      ${t.analysis ? `<div class="muted small">ANÁLISIS</div><div class="textblock">${esc(t.analysis)}</div>` : ''}
+      ${t.emotional ? `<div class="muted small">EMOCIONAL</div><div class="textblock">${esc(t.emotional)}</div>` : ''}
+      ${t.whatHappened ? `<div class="muted small">¿QUÉ PASÓ?</div><div class="textblock">${esc(t.whatHappened)}</div>` : ''}
+      ${t.lesson ? `<div class="muted small">LECCIÓN / MEJORA</div><div class="textblock">${esc(t.lesson)}</div>` : ''}
+      ${mediaGrid(t.media)}
+      <div class="row" style="margin-top:10px"><button class="btn sm" data-action="editTrade" data-id="${t.id}">✏️ Editar</button><button class="btn sm" data-action="dupTrade" data-id="${t.id}">⧉ Duplicar</button><button class="btn sm" data-action="logFromTrade" data-id="${t.id}">🧠 A bitácora</button><button class="btn sm danger" data-action="delTrade" data-id="${t.id}">🗑 Eliminar</button></div>
+    </div></div>`;
+}
+function vReal() {
+  const F = S.ui.real, bal = balances();
+  let ts = filterTrades({ mode: 'real', account: F.account, from: F.from, to: F.to });
+  if (F.outcome !== 'all') ts = ts.filter(t => outcome(t) === F.outcome);
+  if (F.q) { const q = F.q.toLowerCase(); ts = ts.filter(t => JSON.stringify([t.analysis, t.emotional, t.whatHappened, t.lesson, t.setup, t.emotion, t.errors, t.instrument]).toLowerCase().includes(q)); }
+  const st = computeStats(ts);
+  const days = {}; sortTrades(ts).forEach(t => (days[t.date] = days[t.date] || []).push(t));
+  const list = Object.keys(days).sort().reverse().map(d => {
+    const dt = days[d], pnl = sum(dt.map(t => t.pnl || 0)), rr = sum(dt.map(t => t.r || 0));
+    const firstB = bal[dt[0].id], lastB = bal[dt[dt.length - 1].id];
+    const sameAcc = dt.every(t => t.accountId === dt[0].accountId);
+    return `<div class="day"><div class="day-head"><b style="text-transform:capitalize">${fmtDateLong(d)}</b><span class="muted">${dt.length} trade${dt.length > 1 ? 's' : ''}</span>
+       <span class="spacer"></span>${dt.some(t => t.r != null) ? `<span class="${cls(rr)}">${fmtR(rr)}</span>` : ''}<b class="${cls(pnl)}">${money(pnl)}</b>
+       ${sameAcc && firstB && firstB.before ? `<span class="muted small">${fmtSPct(pnl / firstB.before * 100)} · balance ${money(lastB.after, false)}</span>` : ''}</div>
+       <div class="day-body">${dt.map(t => tradeRow(t, bal)).join('')}</div></div>`;
+  }).join('');
+  return `<h2 class="view-title">Journal real</h2><p class="view-sub">Cada trade con su análisis, lo emocional, capturas y videos. Toca un trade para ver el detalle.</p>
+   <div class="row" style="margin-bottom:12px">
+     ${sel('a', accOpts(), F.account, 'data-change="setUi" data-path="real.account" style="width:auto"')}
+     <input type="date" value="${F.from}" data-change="setUi" data-path="real.from" style="width:auto" title="Desde"><span class="muted">a</span><input type="date" value="${F.to}" data-change="setUi" data-path="real.to" style="width:auto" title="Hasta">
+     ${sel('o', [['all', 'Todos'], ['W', 'Ganados'], ['L', 'Perdidos'], ['BE', 'Break even']], F.outcome, 'data-change="setUi" data-path="real.outcome" style="width:auto"')}
+     <input type="search" placeholder="Buscar en notas…" value="${esc(F.q)}" data-change="setUi" data-path="real.q" style="width:200px">
+     ${F.from || F.to || F.q || F.outcome !== 'all' ? `<button class="btn sm" data-action="clearRealFilters">Limpiar filtros</button>` : ''}
+     <span class="spacer"></span><button class="btn primary" data-action="newTrade" data-mode="real">＋ Nuevo trade</button>
+   </div>
+   <div class="kpis" style="margin-bottom:14px">${kpi('Trades', st.n)}${kpi('Resultado', `<span class="${cls(st.net)}">${fmtU(st.net, st.unit)}</span>`)}${kpi('Win rate', fmtPct(st.wr))}${kpi('Cumplimiento', fmtPct(st.compliance, 0))}</div>
+   ${list || `<div class="empty">No hay trades con estos filtros. <br><br><button class="btn primary" data-action="newTrade" data-mode="real">＋ Registrar trade</button></div>`}`;
+}
+
+/* ---------- Backtesting ---------- */
+function vBacktest() {
+  const F = S.ui.bt, risks = S.settings.btRisks;
+  const all = sortTrades(S.trades.filter(t => t.mode === 'backtest'));
+  const months = [...new Set(all.map(t => t.date.slice(0, 7)))].sort().reverse();
+  let ts = F.month === 'all' ? all : all.filter(t => t.date.startsWith(F.month));
+  if (F.q) { const q = F.q.toLowerCase(); ts = ts.filter(t => JSON.stringify([t.analysis, t.setup, t.lesson, t.whatHappened]).toLowerCase().includes(q)); }
+  const st = computeStats(ts, 'R');
+  const bal = risks.map(() => 0);
+  let rows = '', wk = null, wkT = [];
+  const weekOf = iso => { const d = dateObj(iso); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return isoOf(d); };
+  const wkRow = () => { if (!wkT.length) return ''; const W = wkT.filter(t => outcome(t) === 'W').length, L = wkT.filter(t => outcome(t) === 'L').length, B = wkT.length - W - L; const r = sum(wkT.map(t => t.r || 0)); return `<tr class="week"><td colspan="3">Semana del ${fmtDate(wk)}</td><td class="num ${cls(r)}">${fmtR(r)}</td>${risks.map(k => `<td class="num">${fmtSPct(r * k)}</td>`).join('')}<td>${W}G/${L}P/${B}BE</td><td></td></tr>`; };
+  for (const t of ts) {
+    const w = weekOf(t.date);
+    if (wk && w !== wk) { rows += wkRow(); wkT = []; }
+    wk = w; wkT.push(t);
+    risks.forEach((k, i) => bal[i] += (t.r || 0) * k);
+    const o = outcome(t);
+    rows += `<tr class="clickable" data-action="editTrade" data-id="${t.id}"><td>${fmtDate(t.date)}</td><td>${DOW[dow(t.date)].slice(0, 3)} ${esc(t.time || '')}</td><td>${esc(t.setup || '')}${(t.media || []).length ? ' 📎' : ''}</td><td class="num ${cls(t.r)}">${fmtR(t.r)}</td>${risks.map((k, i) => `<td class="num">${fmtSPct(bal[i])}</td>`).join('')}<td><span class="tag ${o}">${o === 'W' ? 'W' : o === 'L' ? 'L' : 'BE'}</span></td><td class="muted small" style="max-width:260px;overflow:hidden;text-overflow:ellipsis">${esc((t.analysis || t.lesson || '').slice(0, 80))}</td></tr>`;
+  }
+  rows += wkRow();
+  const quick = `<form id="btQuick" class="fgrid" style="align-items:end">
+     <label class="f">Fecha<input type="date" name="date" value="${todayISO()}" required></label>
+     <label class="f">Hora<input type="time" name="time"></label>
+     <label class="f">Dirección${sel('direction', [['long', 'Compra'], ['short', 'Venta']], 'long')}</label>
+     <label class="f">Setup${sel('setup', ['', ...S.settings.setups], '')}</label>
+     <label class="f">Resultado (R)<input type="number" step="any" name="r" placeholder="ej. 2, -1, 0" required inputmode="decimal"></label>
+     <label class="f wide">Nota rápida<input type="text" name="analysis" placeholder="Qué viste, por qué entraste…"></label>
+     <div class="row wide"><button class="btn primary" type="submit">＋ Agregar</button><button class="btn" type="button" data-action="newTrade" data-mode="backtest">Formulario completo (fotos, video, checklist)</button></div>
+   </form>`;
+  return `<h2 class="view-title">Backtesting</h2><p class="view-sub">Registra cada trade de backtest en R. La tabla calcula el balance con distintos riesgos (como tu hoja de Excel) y agrupa por semana.</p>
+   ${hiddenBar('b-')}
+   ${card('b-quick', '⚡ Registro rápido', quick)}
+   ${card('b-sum', '📊 Resumen', `<div class="kpis">${kpi('Trades', st.n, `${st.days} días`)}${kpi('W / L / BE', `${st.W} / ${st.L} / ${st.B}`)}${kpi('Win rate', fmtPct(st.wr))}${kpi('Total', `<span class="${cls(st.net)}">${fmtR(st.net)}</span>`)}${risks.map(k => kpi(`Con riesgo ${k}%`, `<span class="${cls(st.net)}">${fmtSPct(st.net * k)}</span>`)).join('')}${kpi('Máx. drawdown', fmtR(-st.maxDD), `racha pérdidas: ${st.maxL}`)}</div>
+      <div style="margin-top:12px">${lineChart(st.curve.map(p => p.y), 'R')}</div>`)}
+   ${card('b-table', '🗂 Tabla de backtesting', `<div class="row" style="margin-bottom:10px">${sel('m', [['all', 'Todos los meses'], ...months.map(m => [m, MONTHS[+m.slice(5) - 1] + ' ' + m.slice(0, 4)])], F.month, 'data-change="setUi" data-path="bt.month" style="width:auto"')}<input type="search" placeholder="Buscar…" value="${esc(F.q)}" data-change="setUi" data-path="bt.q" style="width:200px"><span class="spacer"></span><button class="btn sm" data-action="exportCSV" data-mode="backtest">⬇ Exportar a Excel (CSV)</button></div>
+      ${ts.length ? `<div class="tbl-wrap"><table class="tbl"><thead><tr><th>Fecha</th><th>Día</th><th>Setup</th><th class="num">R</th>${risks.map(k => `<th class="num">Bal. ${k}%</th>`).join('')}<th>W/L</th><th>Nota</th></tr></thead><tbody>${rows}</tbody></table></div><div class="muted small" style="margin-top:6px">Toca una fila para editarla (agregar fotos, video, checklist…). Los riesgos se cambian en Ajustes.</div>` : '<div class="empty">Aún no hay trades de backtesting.</div>'}`)}`;
+}
+
+/* ---------- Tareas ---------- */
+function vTasks() {
+  const F = S.ui.tasks; let ts = S.tasks;
+  if (F.q) { const q = F.q.toLowerCase(); ts = ts.filter(t => JSON.stringify(t).toLowerCase().includes(q)); }
+  const col = (st, title) => {
+    const items = ts.filter(t => t.status === st).sort((a, b) => (a.due || '9') < (b.due || '9') ? -1 : 1);
+    return `<div class="kcol"><h4>${title} <span class="tag">${items.length}</span></h4>${items.map(t => {
+      const late = t.due && t.due < todayISO() && t.status !== 'done';
+      return `<div class="task ${t.status === 'done' ? 'done' : ''}"><div class="row" style="align-items:flex-start;flex-wrap:nowrap">
+        <input type="checkbox" ${t.status === 'done' ? 'checked' : ''} data-change="taskDone" data-id="${t.id}" style="width:20px;height:20px;margin-top:2px;accent-color:var(--pos)" aria-label="Hecha">
+        <div style="flex:1;min-width:0"><div class="t" data-action="editTask" data-id="${t.id}">${esc(t.title)}</div>
+        <div class="row small muted" style="gap:6px;margin-top:3px">${t.week ? `<span class="tag blue">${esc(t.week)}</span>` : ''}${t.due ? `<span class="${late ? 'neg' : ''}">📅 ${fmtDate(t.due)}</span>` : ''}${t.priority === 'alta' ? '<span class="tag L">Alta</span>' : ''}${(t.media || []).length ? `📎 ${t.media.length}` : ''}</div>
+        ${t.desc ? `<div class="small" style="margin-top:4px;white-space:pre-wrap">${esc(t.desc.slice(0, 160))}${t.desc.length > 160 ? '…' : ''}</div>` : ''}
+        ${mediaGrid((t.media || []).slice(0, 3))}</div></div></div>`;
+    }).join('') || '<div class="muted small" style="padding:6px">Nada aquí.</div>'}</div>`;
+  };
+  return `<h2 class="view-title">Tareas de mentoría</h2><p class="view-sub">Tareas de cada clase/semana, con fotos, videos y tus respuestas.</p>
+   <div class="row" style="margin-bottom:14px"><input type="search" placeholder="Buscar tareas…" value="${esc(F.q)}" data-change="setUi" data-path="tasks.q" style="width:240px"><span class="spacer"></span><button class="btn primary" data-action="newTask">＋ Nueva tarea</button></div>
+   <div class="kanban">${col('todo', '📌 Pendientes')}${col('doing', '⏳ En progreso')}${col('done', '✅ Hechas')}</div>`;
+}
+
+/* ---------- Bitácora emocional ---------- */
+function vLog() {
+  const items = [...S.logbook].sort((a, b) => a.date < b.date ? 1 : -1);
+  return `<h2 class="view-title">Bitácora emocional</h2><p class="view-sub">Bitácora de mejora continua: el trade, qué hice que me costó un error, y qué voy a hacer para mejorar.</p>
+   <div class="row" style="margin-bottom:14px"><span class="spacer"></span><button class="btn primary" data-action="newLog">＋ Nueva entrada</button></div>
+   ${items.map(l => card('l-' + l.id, `${fmtDate(l.date)} — ${esc(l.title || 'Entrada')}`, `
+      <div class="row" style="margin-bottom:8px">${l.emotion ? `<span class="tag">${esc(l.emotion)}</span>` : ''}${l.cost ? `<span class="tag L">Costo: ${money(-Math.abs(l.cost))}</span>` : ''}${l.reread ? '<span class="tag W">Releído ✓</span>' : ''}</div>
+      ${l.mistake ? `<div class="muted small">TRADE Y QUÉ HICE QUE ME COSTÓ UN ERROR</div><div class="textblock">${esc(l.mistake)}</div>` : ''}
+      ${l.lesson ? `<div class="muted small">PARA MEJORAR DEBO…</div><div class="textblock">${esc(l.lesson)}</div>` : ''}
+      ${mediaGrid(l.media)}
+      <div class="row" style="margin-top:10px"><button class="btn sm" data-action="editLog" data-id="${l.id}">✏️ Editar</button><button class="btn sm" data-action="taskFromLog" data-id="${l.id}">✅ Convertir en tarea</button><button class="btn sm danger" data-action="delLog" data-id="${l.id}">🗑 Eliminar</button></div>`)).join('') || '<div class="empty">Sin entradas todavía. Cuando un trade te cueste un error, escríbelo aquí: es la forma más rápida de mejorar.</div>'}`;
+}
+
+/* ---------- Análisis IA ---------- */
+function vAI() {
+  const last30 = addDays(todayISO(), -30);
+  const open = S.analyses.find(a => a.id === S.ui.aiOpen);
+  const list = [...S.analyses].sort((a, b) => a.created < b.created ? 1 : -1).map(a => `<div class="an-item ${open && open.id === a.id ? 'active' : ''}" data-action="openAn" data-id="${a.id}">
+      <div style="flex:1;min-width:0"><b>${esc(a.name || 'Análisis')}</b><div class="small muted">${fmtDate(a.from)} → ${fmtDate(a.to)} · ${{ real: 'Real', backtest: 'Backtesting', both: 'Ambos' }[a.mode]} · ${a.result.stats.n} trades</div></div>
+      <b class="${cls(a.result.stats.net)}">${fmtU(a.result.stats.net, a.result.unit)}</b><button class="icon-btn" data-action="delAn" data-id="${a.id}" title="Eliminar">🗑</button></div>`).join('');
+  const form = `<form id="anForm" class="fgrid" style="align-items:end">
+     <label class="f">Desde<input type="date" name="from" value="${last30}" required></label>
+     <label class="f">Hasta<input type="date" name="to" value="${todayISO()}" required></label>
+     <label class="f">Datos${sel('mode', [['real', 'Real'], ['backtest', 'Backtesting'], ['both', 'Real + Backtesting']], 'real')}</label>
+     <label class="f">Cuenta${sel('account', accOpts(), 'all')}</label>
+     <label class="f wide">Nombre (opcional)<input type="text" name="name" placeholder="ej. Semana 3 de mentoría, Octubre…"></label>
+     <div class="wide row"><button class="btn primary" type="submit">🔍 Analizar y guardar</button><span class="muted small">El análisis se hace en tu dispositivo: es gratis y no usa internet ni tokens.</span></div></form>`;
+  return `<h2 class="view-title">Análisis con IA</h2><p class="view-sub">Elige un rango de fechas: el sistema busca patrones que se repiten, tus fortalezas, tus debilidades y lo que te aleja de la rentabilidad. Cada análisis queda guardado para que lo revisemos juntos.</p>
+   <div class="ai-grid">
+     <div>${card('a-new', '🆕 Nuevo análisis', form)}${card('a-list', `📂 Análisis guardados (${S.analyses.length})`, list || '<div class="muted">Aún no hay análisis guardados.</div>')}</div>
+     <div style="min-width:0" class="an-main">${open ? anView(open) : '<div class="empty">Crea un análisis o abre uno guardado.</div>'}</div>
+   </div>`;
+}
+function anView(a) {
+  const r = a.result, st = r.stats, U = x => fmtU(x, r.unit);
+  const prev = S.analyses.filter(x => x.id !== a.id && x.mode === a.mode && x.created < a.created).sort((x, y) => x.created < y.created ? 1 : -1)[0];
+  const cmp = prev ? `<div class="small muted" style="margin-top:8px">Comparado con "${esc(prev.name || 'análisis anterior')}": win rate ${fmtPct(prev.result.stats.wr)} → <b>${fmtPct(st.wr)}</b>, resultado ${fmtU(prev.result.stats.net, prev.result.unit)} → <b>${U(st.net)}</b>.</div>` : '';
+  const F = (arr, c, empty) => arr.length ? arr.map(x => `<div class="finding ${c}"><b>${esc(x.t)}</b><span class="small">${esc(x.d)}</span></div>`).join('') : `<div class="muted small">${empty}</div>`;
+  const leaks = r.leaks.length ? r.leaks.map(l => `<div class="finding f-leak"><div class="row"><b style="flex:1">${esc(l.label)}</b><b class="neg">${U(l.net)}</b></div><span class="small">${l.n} trades · win rate ${fmtPct(l.wr, 0)} · sin estos trades tu resultado sería <b class="${cls(l.without)}">${U(l.without)}</b></span></div>`).join('') : '<div class="muted small">No se detectaron fugas en este período. 👏</div>';
+  const bdown = Object.entries(r.breakdown).map(([k, rows]) => `<details class="sec"><summary>${esc(k)}</summary><div class="sec-body">${hbars(rows, r.unit)}</div></details>`).join('');
+  const hasKey = !!S.settings.ai.apiKey;
+  const chat = (a.chat || []).map((m, i) => `<div class="msg ${m.role}">${m.role === 'user' && i === 0 ? '📊 <i>Se enviaron los datos del período para análisis.</i>' : m.role === 'user' ? esc(m.content) : md(m.content)}</div>`).join('');
+  return `${card('a-res', `📋 ${esc(a.name || 'Análisis')} <span class="muted small">(${fmtDate(a.from)} → ${fmtDate(a.to)})</span>`, `
+     <div class="kpis">${kpi('Trades', st.n, `${st.days} días`)}${kpi('Resultado', `<span class="${cls(st.net)}">${U(st.net)}</span>`)}${kpi('Win rate', fmtPct(st.wr))}${kpi('Profit factor', st.pf == null ? '—' : st.pf === Infinity ? '∞' : st.pf.toFixed(2))}${kpi('R prom. G / P', `${fmtR(st.avgWinR)} / ${fmtR(st.avgLossR)}`)}${kpi('Cumplimiento', fmtPct(st.compliance, 0))}</div>
+     <div style="margin-top:12px">${lineChart(r.curve, r.unit)}</div>
+     <div class="textblock" style="margin-top:10px;white-space:normal">${md(r.summary)}</div>${cmp}
+     <div class="row" style="margin-top:8px"><button class="btn sm" data-action="reAn" data-id="${a.id}">↻ Recalcular con datos actuales</button><button class="btn sm" data-action="copyAn" data-id="${a.id}">📋 Copiar resumen para pegar en Claude</button></div>`)}
+   ${card('a-leaks', '🕳 Lo que te aleja de la rentabilidad', leaks)}
+   <div class="grid g2">${card('a-good', '💪 Fortalezas', F(r.good, 'f-good', 'Necesito más datos para detectar fortalezas.'))}${card('a-bad', '⚠️ Debilidades', F(r.bad, 'f-bad', 'Sin debilidades claras en este período.'))}</div>
+   ${card('a-pat', '🔁 Patrones que se repiten', F(r.patterns, 'f-pat', 'Sin patrones claros todavía (se necesitan más trades).'))}
+   ${card('a-recs', '🎯 Plan de acción', r.recs.map((x, i) => `<div class="finding f-good row"><span style="flex:1">${esc(x)}</span><button class="btn sm" data-action="recTask" data-id="${a.id}" data-i="${i}">✅ Crear tarea</button></div>`).join(''))}
+   ${card('a-bd', '🔬 Desglose detallado', bdown)}
+   ${card('a-notes', '📝 Nuestras conclusiones', `<textarea rows="5" data-change="anNotes" data-id="${a.id}" placeholder="Lo que concluimos juntos, compromisos para el próximo período…">${esc(a.notes || '')}</textarea><div class="muted small">Se guarda automáticamente.</div>`)}
+   ${card('a-claude', '🤖 Conversar con la IA sobre este análisis', hasKey ? `
+      <div class="chat" id="chatBox">${chat || '<div class="muted small">Pide a la IA un análisis profundo de este período. Puedes seguir preguntando y la conversación queda guardada.</div>'}</div>
+      <form id="chatForm" data-id="${a.id}" style="margin-top:10px"><textarea name="q" rows="3" placeholder="${chat ? 'Pregunta algo más… (ej. ¿por qué pierdo los martes?)' : '(Opcional) ¿Qué quieres que revise en especial?'}"></textarea>
+        <div class="row" style="margin-top:8px"><button class="btn blue" type="submit">${chat ? 'Enviar' : '🤖 Analizar a fondo con IA'}</button><span class="muted small">Usa tu clave de API (tiene costo por uso, independiente de tu plan de Claude).</span></div></form>`
+      : `<p class="small">El análisis de arriba es <b>gratis</b> y se hace en tu equipo. Si además quieres conversar con una IA sobre tus datos, tienes dos opciones:</p>
+         <ol class="small"><li>Toca <b>"📋 Copiar resumen para pegar en Claude"</b> y pégalo en una conversación cuando quieras (solo usa tokens cuando tú lo decidas).</li>
+         <li>O agrega tu clave de API de Anthropic en <b>Ajustes → IA</b> para chatear aquí mismo.</li></ol>`)}`;
+}
+
+/* ---------- Ajustes ---------- */
+function vSettings() {
+  const s = S.settings;
+  const fsSupported = !!window.showDirectoryPicker;
+  const backup = `
+    <p class="small">Todo se guarda automáticamente en este navegador. Para no perder nada, ten también una <b>carpeta de respaldo</b> en tu computadora.</p>
+    ${fsSupported ? `<div class="row" style="margin-bottom:10px">
+        <span class="pill ${FS.status === 'ok' ? 'ok' : 'bad'}">${FS.status === 'ok' ? '✓ Carpeta conectada: ' + esc(FS.handle?.name || '') : FS.status === 'needs-permission' ? '⚠ Carpeta "' + esc(FS.handle?.name || '') + '" necesita permiso' : FS.status === 'error' ? '⚠ Error con la carpeta' : 'Sin carpeta'}</span>
+        ${FS.status === 'needs-permission' ? '<button class="btn primary" data-action="reconnectFolder">Reconectar</button>' : ''}
+        <button class="btn" data-action="chooseFolder">📁 ${FS.handle ? 'Cambiar carpeta' : 'Elegir carpeta de respaldo'}</button>
+        ${FS.status === 'ok' ? '<button class="btn" data-action="backupNow">Respaldar ahora</button><button class="btn" data-action="restoreFolder">Restaurar desde la carpeta</button>' : ''}
+      </div>
+      <p class="muted small">Con la carpeta conectada, cada cambio se copia ahí: <code>journal-datos.json</code> (tus datos), <code>media/</code> (fotos y videos) e <code>historial/</code> (una copia por día). Último respaldo: ${lastBackup ? new Date(lastBackup).toLocaleString('es-MX') : 'nunca'}.</p>`
+      : `<div class="banner small">Este navegador (tablet / Safari / Firefox) no permite escribir en una carpeta automáticamente. Usa <b>Exportar respaldo</b> regularmente y guarda el archivo en tu carpeta (Archivos / iCloud / Drive).</div>`}
+    <div class="row"><button class="btn" data-action="exportJSON">⬇ Exportar respaldo completo (.json)</button>
+      <button class="btn" data-action="importJSON" data-how="merge">⬆ Importar y combinar</button>
+      <button class="btn danger" data-action="importJSON" data-how="replace">⬆ Restaurar (reemplaza todo)</button>
+      <button class="btn" data-action="exportCSV" data-mode="all">⬇ Trades a Excel (CSV)</button></div>
+    <p class="muted small" style="margin-bottom:0">Para pasar tus datos entre la PC y la tablet: exporta en uno e "Importar y combinar" en el otro. Último export manual: ${s.lastExport ? new Date(s.lastExport).toLocaleString('es-MX') : 'nunca'}. <span id="storageInfo"></span></p>`;
+  const lists = [['emotions', 'Emociones'], ['negEmotions', 'Emociones que considero negativas'], ['errorTags', 'Errores frecuentes'], ['setups', 'Setups / confirmaciones'], ['zones', 'Zonas / temporalidades']]
+    .map(([k, l]) => `<label class="f">${l} <span class="small" style="font-weight:400">(una por línea)</span><textarea rows="5" data-change="setList" data-k="${k}">${esc(s[k].join('\n'))}</textarea></label>`).join('');
+  const accs = s.accounts.map(a => `<div class="fgrid" style="margin-bottom:8px;align-items:end"><label class="f">Nombre<input type="text" value="${esc(a.name)}" data-change="accField" data-id="${a.id}" data-f="name"></label><label class="f">Balance inicial<input type="number" step="any" value="${a.initial}" data-change="accField" data-id="${a.id}" data-f="initial"></label><label class="f">Tipo${sel('t', ['Fondeo', 'Real', 'Demo', 'Evaluación'], a.type, `data-change="accField" data-id="${a.id}" data-f="type"`)}</label><div><button class="btn sm danger" data-action="accDel" data-id="${a.id}">Eliminar</button></div></div>`).join('');
+  return `<h2 class="view-title">Ajustes y respaldo</h2><p class="view-sub">Personaliza tu journal, oculta lo que no uses y protege tus datos.</p>
+   ${card('s-backup', '💾 Respaldo y sincronización', backup)}
+   <div class="grid g2">
+   ${card('s-profile', '👤 Perfil', `<div class="fgrid">
+      <label class="f">Tu nombre<input type="text" value="${esc(s.traderName)}" data-change="setS" data-k="traderName"></label>
+      <label class="f">Moneda${sel('c', ['USD', 'MXN', 'EUR', 'COP', 'ARS', 'CLP', 'PEN'], s.currency, 'data-change="setS" data-k="currency"')}</label>
+      <label class="f">Instrumento por defecto<input type="text" value="${esc(s.instrument)}" data-change="setS" data-k="instrument"></label>
+      <label class="f">Umbral de break even ($)<input type="number" step="any" value="${s.beThreshold}" data-change="setS" data-k="beThreshold" data-num="1"></label>
+      <label class="f">Riesgos del backtesting (%)<input type="text" value="${s.btRisks.join(', ')}" data-change="setRisks"></label>
+      <label class="f">Tema${sel('th', [['dark', 'Oscuro'], ['light', 'Claro']], s.theme, 'data-change="setS" data-k="theme"')}</label></div>`)}
+   ${card('s-tabs', '👁 Pestañas visibles', `<div class="checklist">${TABS.filter(([k]) => k !== 'settings').map(([k, l]) => `<label><input type="checkbox" ${s.hiddenTabs[k] ? '' : 'checked'} data-change="tabVis" data-k="${k}">${l}</label>`).join('')}</div>
+      ${Object.entries(s.hiddenCards).filter(([, v]) => v).length ? `<p class="small muted" style="margin-bottom:6px">Secciones ocultas:</p><div class="row">${Object.entries(s.hiddenCards).filter(([, v]) => v).map(([k, v]) => `<button class="btn sm" data-action="showCard" data-key="${k}">👁 ${esc(typeof v === 'string' ? v : k)}</button>`).join('')}</div>` : ''}`)}
+   </div>
+   ${card('s-acc', '🏦 Cuentas', accs + '<button class="btn sm" data-action="accAdd">＋ Agregar cuenta</button>')}
+   ${card('s-lists', '🏷 Listas (emociones, errores, setups)', `<div class="grid g3">${lists}</div>`)}
+   ${card('s-ai', '🤖 IA (opcional)', `
+      <p class="small">El análisis de patrones funciona <b>sin IA externa y gratis</b>. Si quieres además conversar con Claude dentro del journal, crea una clave en <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a> y pégala aquí. Se cobra por uso a esa cuenta de API (no usa tu plan de Claude). La clave queda guardada solo en este dispositivo y no se incluye en los respaldos.</p>
+      <div class="fgrid"><label class="f">Clave de API<input type="password" value="${esc(s.ai.apiKey)}" data-change="setAI" data-k="apiKey" placeholder="sk-ant-…" autocomplete="off"></label>
+      <label class="f">Modelo${sel('m', [['claude-opus-5-5', 'Claude Opus 5.5 (el más completo)'], ['claude-sonnet-5-5', 'Claude Sonnet 5.5 (equilibrado)'], ['claude-haiku-5-5', 'Claude Haiku 5.5 (el más económico)']], s.ai.model, 'data-change="setAI" data-k="model"')}</label></div>`)}
+   ${card('s-danger', '⚠️ Zona de peligro', `<div class="row"><button class="btn danger" data-action="delDemo">Borrar datos de ejemplo</button><button class="btn danger" data-action="wipe">Borrar TODO</button></div>`)}`;
+}
+
+/* =========================================================
+   Formularios (modal)
+   ========================================================= */
+let modalSave = null;
+function openModal(title, body, saveLabel, onSave, extraFoot = '') {
+  $('#modalTitle').textContent = title; $('#modalBody').innerHTML = body;
+  $('#modalFoot').innerHTML = `${extraFoot}<span class="spacer"></span><button class="btn" data-action="closeModal">Cancelar</button>${onSave ? `<button class="btn primary" data-action="modalSave">${saveLabel || 'Guardar'}</button>` : ''}`;
+  modalSave = onSave; $('#modal').classList.remove('hidden'); $('#modal').scrollTop = 0; document.body.style.overflow = 'hidden';
+  bindME(); hydrateMedia($('#modalBody'));
+}
+function closeModal() {
+  ME.pending.forEach(p => URL.revokeObjectURL(p.url)); ME.pending = []; ME.ids = []; ME.removed = [];
+  $('#modal').classList.add('hidden'); $('#modalBody').innerHTML = ''; modalSave = null; document.body.style.overflow = '';
+}
+const fd = () => { const f = $('#modalForm'); return f ? new FormData(f) : new FormData(); };
+
+function tradeForm(id, mode, copy) {
+  const src = id ? S.trades.find(x => x.id === id) : null;
+  const t = src ? structuredClone(src) : { mode, accountId: S.ui.real.account !== 'all' ? S.ui.real.account : S.settings.accounts[0]?.id, date: todayISO(), time: mode === 'real' ? nowHM() : '', instrument: S.settings.instrument, direction: 'long', zones: [], rules: {}, errors: [], media: [], emotionLevel: 3 };
+  if (copy) { delete t.id; t.media = []; t.date = todayISO(); }
+  mode = t.mode;
+  const s = S.settings;
+  const n = (name, label, ph = '') => `<label class="f">${label}<input type="number" step="any" inputmode="decimal" name="${name}" value="${t[name] ?? ''}" placeholder="${ph}"></label>`;
+  const body = `<form id="modalForm" onsubmit="return false">
+   <details class="sec" open><summary>📌 Datos del trade</summary><div class="sec-body"><div class="fgrid">
+     ${mode === 'real' ? `<label class="f">Cuenta${sel('accountId', accOpts(false), t.accountId)}</label>` : ''}
+     <label class="f">Fecha<input type="date" name="date" value="${t.date}" required></label>
+     <label class="f">Hora entrada<input type="time" name="time" value="${t.time || ''}"></label>
+     <label class="f">Hora salida<input type="time" name="exitTime" value="${t.exitTime || ''}"></label>
+     <label class="f">Instrumento<input type="text" name="instrument" value="${esc(t.instrument || '')}"></label>
+     <label class="f">Dirección${sel('direction', [['long', 'Compra (largo)'], ['short', 'Venta (corto)']], t.direction)}</label>
+     ${n('lots', 'Lotes')}${n('entry', 'Precio entrada')}${n('exit', 'Precio salida')}
+     ${n('slPoints', 'SL (puntos)')}${n('tpPoints', 'TP (puntos)')}${n('points', 'Puntos ganados/perdidos', 'auto')}
+     ${n('pnl', 'Resultado $', mode === 'backtest' ? 'opcional' : 'ej. 708 o -31.2')}${n('r', 'Resultado en R', 'auto')}
+     <label class="f">Setup / confirmación${sel('setup', ['', ...s.setups], t.setup)}</label>
+   </div>
+   <div style="margin-top:12px"><div class="muted small" style="margin-bottom:6px;font-weight:600">Zona / temporalidad</div><div class="chips">${s.zones.map(z => `<label class="chip"><input type="checkbox" name="zones" value="${esc(z)}" ${(t.zones || []).includes(z) ? 'checked' : ''}>${esc(z)}</label>`).join('')}</div></div>
+   <div class="muted small" style="margin-top:8px">Si dejas vacío "Puntos" o "R", se calculan con entrada/salida y SL.</div>
+   </div></details>
+   <details class="sec" open><summary>✅ Checklist del plan</summary><div class="sec-body"><div class="checklist">${S.plan.rules.map(r => `<label><input type="checkbox" name="rules" value="${r.id}" ${t.rules && t.rules[r.id] ? 'checked' : ''}>${esc(r.text)}</label>`).join('')}</div>
+     <div class="row" style="margin-top:8px"><button type="button" class="btn sm" data-action="checkAll">Marcar todo</button><span class="muted small">Marca solo lo que realmente cumpliste.</span></div></div></details>
+   <details class="sec" open><summary>🧠 Emociones</summary><div class="sec-body"><div class="fgrid">
+     <label class="f">Emoción antes de entrar${sel('emotion', ['', ...s.emotions], t.emotion)}</label>
+     <label class="f">Intensidad (1 tranquila – 5 muy fuerte)<input type="range" min="1" max="5" name="emotionLevel" value="${t.emotionLevel || 3}"></label>
+     <label class="f">Emoción después${sel('emotionAfter', ['', ...s.emotions], t.emotionAfter)}</label></div>
+     <label class="f" style="margin-top:12px">Emocional — ¿cómo te sentiste durante el trade?<textarea name="emotional" placeholder="Ej. El precio estuvo un rato ahí, luego cayó y sentí miedo, moví el stop…">${esc(t.emotional || '')}</textarea></label></div></details>
+   <details class="sec" open><summary>⚠️ Errores cometidos</summary><div class="sec-body"><div class="chips">${s.errorTags.map(e => `<label class="chip err"><input type="checkbox" name="errors" value="${esc(e)}" ${(t.errors || []).includes(e) ? 'checked' : ''}>${esc(e)}</label>`).join('')}</div></div></details>
+   <details class="sec" open><summary>📝 Descriptivo</summary><div class="sec-body">
+     <label class="f">Análisis — ¿por qué entraste?<textarea name="analysis" placeholder="Ej. Entramos en posiciones cortas especulando una caída por toma de liquidez en zona H4…">${esc(t.analysis || '')}</textarea></label>
+     <label class="f" style="margin-top:10px">¿Qué pasó? (vista H1 / resultado)<textarea name="whatHappened" placeholder="Ej. Buscábamos una reversión después de la toma de liquidez…">${esc(t.whatHappened || '')}</textarea></label>
+     <label class="f" style="margin-top:10px">Lección / qué mejorar<textarea name="lesson" placeholder="Ej. Debí quedarme sin operar con el parcial ganado…">${esc(t.lesson || '')}</textarea></label></div></details>
+   <details class="sec" open><summary>📷 Capturas y videos</summary><div class="sec-body">${mediaEditor(t.media)}</div></details>
+  </form>`;
+  openModal(id && !copy ? 'Editar trade' : (mode === 'backtest' ? 'Nuevo trade de backtesting' : 'Nuevo trade'), body, 'Guardar trade', async () => {
+    const f = fd();
+    const g = k => f.get(k), gn = k => num(f.get(k));
+    if (!g('date')) { toast('Falta la fecha'); return false; }
+    const o = {
+      ...(copy ? {} : (src || {})), id: (!copy && src) ? src.id : uid(), mode, accountId: mode === 'real' ? g('accountId') : null,
+      date: g('date'), time: g('time'), exitTime: g('exitTime'), instrument: g('instrument'), direction: g('direction'),
+      lots: gn('lots'), entry: gn('entry'), exit: gn('exit'), slPoints: gn('slPoints'), tpPoints: gn('tpPoints'), points: gn('points'), pnl: gn('pnl'), r: gn('r'),
+      setup: g('setup'), zones: f.getAll('zones'), emotion: g('emotion'), emotionLevel: gn('emotionLevel'), emotionAfter: g('emotionAfter'),
+      errors: f.getAll('errors'), analysis: g('analysis'), emotional: g('emotional'), whatHappened: g('whatHappened'), lesson: g('lesson'),
+    };
+    o.rules = {}; f.getAll('rules').forEach(r => o.rules[r] = true); o.rulesReviewed = true;
+    if (o.points == null && o.entry != null && o.exit != null) o.points = +((o.exit - o.entry) * (o.direction === 'short' ? -1 : 1)).toFixed(2);
+    if (o.r == null && o.points != null && o.slPoints) o.r = +(o.points / o.slPoints).toFixed(2);
+    if (o.pnl == null && o.r == null) { toast('Indica el resultado en $ o en R (o entrada/salida + SL)'); return false; }
+    o.media = await commitME();
+    o.created = o.created || new Date().toISOString(); o.updated = new Date().toISOString();
+    const i = S.trades.findIndex(x => x.id === o.id); if (i >= 0) S.trades[i] = o; else S.trades.push(o);
+    await save(); toast('Trade guardado ✓');
+  });
+}
+function taskForm(id, preset = {}) {
+  const t = id ? S.tasks.find(x => x.id === id) : { status: 'todo', priority: 'normal', media: [], ...preset };
+  const body = `<form id="modalForm" onsubmit="return false"><div class="fgrid">
+     <label class="f wide">Tarea<input type="text" name="title" value="${esc(t.title || '')}" required placeholder="Ej. Hacer backtesting de julio con SL 90"></label>
+     <label class="f">Semana / clase<input type="text" name="week" value="${esc(t.week || '')}" placeholder="Semana 1 – Clase 1"></label>
+     <label class="f">Fecha límite<input type="date" name="due" value="${t.due || ''}"></label>
+     <label class="f">Estado${sel('status', [['todo', 'Pendiente'], ['doing', 'En progreso'], ['done', 'Hecha']], t.status)}</label>
+     <label class="f">Prioridad${sel('priority', [['normal', 'Normal'], ['alta', 'Alta'], ['baja', 'Baja']], t.priority)}</label>
+     <label class="f wide">Descripción / instrucciones del mentor<textarea name="desc">${esc(t.desc || '')}</textarea></label>
+     <label class="f wide">Mi respuesta / notas<textarea name="notes">${esc(t.notes || '')}</textarea></label></div>
+     <div style="margin-top:12px">${mediaEditor(t.media)}</div></form>`;
+  openModal(id ? 'Editar tarea' : 'Nueva tarea', body, 'Guardar', async () => {
+    const f = fd(); if (!f.get('title')) { toast('Escribe la tarea'); return false; }
+    const o = { ...t, id: t.id || uid(), title: f.get('title'), week: f.get('week'), due: f.get('due'), status: f.get('status'), priority: f.get('priority'), desc: f.get('desc'), notes: f.get('notes') };
+    o.media = await commitME(); o.created = o.created || new Date().toISOString(); o.updated = new Date().toISOString();
+    const i = S.tasks.findIndex(x => x.id === o.id); if (i >= 0) S.tasks[i] = o; else S.tasks.push(o);
+    await save(); toast('Tarea guardada ✓');
+  }, id ? `<button class="btn danger" data-action="delTask" data-id="${id}">🗑 Eliminar</button>` : '');
+}
+function logForm(id, preset = {}) {
+  const l = id ? S.logbook.find(x => x.id === id) : { date: todayISO(), media: [], ...preset };
+  const body = `<form id="modalForm" onsubmit="return false"><div class="fgrid">
+     <label class="f">Fecha<input type="date" name="date" value="${l.date}"></label>
+     <label class="f">Título<input type="text" name="title" value="${esc(l.title || '')}" placeholder="Ej. Metí lotaje por emociones"></label>
+     <label class="f">Emoción principal${sel('emotion', ['', ...S.settings.emotions], l.emotion)}</label>
+     <label class="f">Costo del error ($)<input type="number" step="any" name="cost" value="${l.cost ?? ''}"></label>
+     <label class="f wide">Trade y qué hice que me costó un error<textarea name="mistake" rows="5" placeholder="Ej. Debí haberme quedado sin operar ese día solo con el parcial ganado. No borré las operaciones de abajo y perdí de más…">${esc(l.mistake || '')}</textarea></label>
+     <label class="f wide">Para mejorar debo…<textarea name="lesson" placeholder="Ej. Leer mi plan de trading en el celular antes de empezar a poner órdenes.">${esc(l.lesson || '')}</textarea></label>
+     <label class="chip" style="width:max-content"><input type="checkbox" name="reread" ${l.reread ? 'checked' : ''}>Ya lo releí antes de operar</label></div>
+     <div style="margin-top:12px">${mediaEditor(l.media)}</div></form>`;
+  openModal(id ? 'Editar entrada de bitácora' : 'Nueva entrada de bitácora', body, 'Guardar', async () => {
+    const f = fd();
+    const o = { ...l, id: l.id || uid(), date: f.get('date') || todayISO(), title: f.get('title'), emotion: f.get('emotion'), cost: num(f.get('cost')), mistake: f.get('mistake'), lesson: f.get('lesson'), reread: !!f.get('reread') };
+    o.media = await commitME(); o.created = o.created || new Date().toISOString(); o.updated = new Date().toISOString();
+    const i = S.logbook.findIndex(x => x.id === o.id); if (i >= 0) S.logbook[i] = o; else S.logbook.push(o);
+    await save(); toast('Entrada guardada ✓');
+  });
+}
+
+/* =========================================================
+   IA externa (opcional) — Claude API
+   ========================================================= */
+function anDataForAI(a) {
+  const ts = sortTrades(filterTrades({ mode: a.mode, account: a.account, from: a.from, to: a.to })).slice(-400);
+  const rules = S.plan.rules.map(r => r.text);
+  return {
+    plan: { titulo: S.plan.title, parametros: S.plan.params, secciones: S.plan.sections.map(s => ({ titulo: s.title, texto: s.body })), checklist: rules },
+    periodo: { desde: a.from, hasta: a.to, datos: a.mode },
+    resumen_local: { estadisticas: { ...a.result.stats }, fugas: a.result.leaks.map(l => ({ fuga: l.label, trades: l.n, resultado: l.net })), fortalezas: a.result.good, debilidades: a.result.bad, patrones: a.result.patterns },
+    trades: ts.map(t => ({
+      fecha: t.date, dia: DOW[dow(t.date)], hora: t.time, salida: t.exitTime, modo: t.mode, dir: t.direction, lotes: t.lots, sl_pts: t.slPoints, puntos: t.points, pnl: t.pnl, r: t.r,
+      resultado: outcome(t), setup: t.setup, zonas: t.zones, emocion: t.emotion, intensidad: t.emotionLevel, emocion_despues: t.emotionAfter,
+      checklist_cumplido: compliance(t) == null ? null : Math.round(compliance(t) * 100) + '%', errores: t.errors,
+      analisis: (t.analysis || '').slice(0, 300), emocional: (t.emotional || '').slice(0, 300), que_paso: (t.whatHappened || '').slice(0, 200), leccion: (t.lesson || '').slice(0, 200),
+    })),
+    bitacora: S.logbook.filter(l => (!a.from || l.date >= a.from) && (!a.to || l.date <= a.to)).map(l => ({ fecha: l.date, titulo: l.title, error: (l.mistake || '').slice(0, 400), mejora: (l.lesson || '').slice(0, 300) })),
+    conclusiones_previas: a.notes || '',
+  };
+}
+const AI_SYSTEM = `Eres un mentor de trading y psicología del trading que analiza el journal de una persona que opera índices (principalmente NAS100) y está en una mentoría. Respondes siempre en español, con tono cercano, directo y motivador, sin juzgar.
+Tu trabajo: encontrar patrones que se repiten (horarios, días, setups, emociones, errores, comportamiento después de ganar o perder), fortalezas, debilidades y, sobre todo, lo que la aleja de la rentabilidad, comparando lo que hace con su propio plan de negocio.
+Basa cada conclusión en los datos (cita números concretos: cantidad de trades, resultado, win rate). Si los datos no alcanzan para una conclusión, dilo.
+Estructura la primera respuesta con estos títulos: "Diagnóstico", "Patrones que se repiten", "Fortalezas", "Debilidades", "Lo que te aleja de la rentabilidad", "Plan de acción para el próximo período" (máximo 5 acciones concretas y medibles). En las respuestas siguientes, contesta la pregunta de forma concreta.
+No des consejos de inversión sobre qué comprar o vender; enfócate en proceso, disciplina, gestión de riesgo y ejecución del plan.`;
+async function askClaude(a, question) {
+  const key = S.settings.ai.apiKey, model = S.settings.ai.model || 'claude-opus-5-5';
+  a.chat = a.chat || [];
+  if (!a.chat.length) a.chat.push({ role: 'user', content: `Analiza mi journal de trading de este período.${question ? '\n\nEn especial quiero que revises: ' + question : ''}\n\nDATOS (JSON):\n${JSON.stringify(anDataForAI(a))}` });
+  else a.chat.push({ role: 'user', content: question });
+  const body = { model, max_tokens: 16000, system: AI_SYSTEM, messages: a.chat.map(m => ({ role: m.role, content: m.content })), output_config: { effort: 'medium' } };
+  const headers = { 'content-type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' };
+  if (model === 'claude-opus-5-5' || model === 'claude-sonnet-5-5') { headers['anthropic-beta'] = 'server-side-fallback-2026-07-01'; body.fallbacks = 'default'; }
+  let res, data;
+  try { res = await fetch('https://api.anthropic.com/v1/messages', { method: 'POST', headers, body: JSON.stringify(body) }); data = await res.json(); }
+  catch (e) { a.chat.pop(); throw new Error('No hay conexión con la IA (' + e.message + ')'); }
+  if (!res.ok) { a.chat.pop(); const m = data?.error?.message || ('Error ' + res.status); throw new Error(res.status === 401 ? 'La clave de API no es válida.' : res.status === 429 ? 'Límite de uso alcanzado, intenta en un momento.' : m); }
+  if (data.stop_reason === 'refusal') { a.chat.pop(); throw new Error('La IA no pudo responder esta solicitud. Intenta reformular la pregunta.'); }
+  const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('\n').trim();
+  a.chat.push({ role: 'assistant', content: text || '(sin respuesta)' });
+  await save();
+}
+function anClipboardText(a) {
+  const r = a.result;
+  return `Hola Claude, quiero que analices mi journal de trading como mentor de trading y psicología. Busca patrones que se repiten, mis fortalezas, debilidades y lo que me aleja de la rentabilidad, comparado con mi plan de negocio. Termina con un plan de acción de máximo 5 puntos.\n\nResumen automático: ${r.summary.replace(/\*\*/g, '')}\n\nDATOS (JSON):\n${JSON.stringify(anDataForAI(a))}`;
+}
+
+/* =========================================================
+   Respaldo en carpeta (PC con Chrome / Edge)
+   ========================================================= */
+const FS = { handle: null, status: 'none' };
+let lastBackup = null;
+async function initFolder() {
+  lastBackup = await DB.get('kv', 'lastBackup');
+  if (!window.showDirectoryPicker) { FS.status = 'unsupported'; return; }
+  try { const h = await DB.get('kv', 'backupHandle'); if (!h) return; FS.handle = h; FS.status = (await h.queryPermission({ mode: 'readwrite' })) === 'granted' ? 'ok' : 'needs-permission'; }
+  catch (e) { FS.status = 'none'; }
+}
+async function chooseFolder() {
+  try {
+    const h = await window.showDirectoryPicker({ id: 'trading-journal', mode: 'readwrite' });
+    await DB.put('kv', h, 'backupHandle'); FS.handle = h; FS.status = 'ok';
+    await backupToFolder(); toast('Carpeta conectada. Respaldo hecho ✓');
+  } catch (e) { if (e.name !== 'AbortError') toast('No se pudo usar la carpeta: ' + e.message, 4000); }
+  render();
+}
+async function reconnectFolder() {
+  if (!FS.handle) return chooseFolder();
+  try { FS.status = (await FS.handle.requestPermission({ mode: 'readwrite' })) === 'granted' ? 'ok' : 'needs-permission'; if (FS.status === 'ok') { await backupToFolder(); toast('Carpeta reconectada ✓'); } }
+  catch (e) { toast(e.message); }
+  render();
+}
+let bkTimer = null;
+function scheduleBackup() { updateBackupPill(); if (FS.status !== 'ok') return; clearTimeout(bkTimer); bkTimer = setTimeout(() => backupToFolder(), 2500); }
+async function writeFile(dir, name, data) { const fh = await dir.getFileHandle(name, { create: true }); const w = await fh.createWritable(); await w.write(data); await w.close(); }
+const mediaFileName = m => m.id + '__' + (m.name || 'archivo').replace(/[^\w.\-]+/g, '_').slice(-80);
+function stateForExport() { const c = structuredClone(S); c.settings.ai = { ...c.settings.ai, apiKey: '' }; return c; }
+async function backupToFolder() {
+  if (!FS.handle) return;
+  try {
+    const root = FS.handle;
+    const json = JSON.stringify({ app: 'trading-journal', version: 1, exported: new Date().toISOString(), state: stateForExport() });
+    await writeFile(root, 'journal-datos.json', json);
+    const hist = await root.getDirectoryHandle('historial', { create: true });
+    await writeFile(hist, 'journal-' + todayISO() + '.json', json);
+    const mdir = await root.getDirectoryHandle('media', { create: true });
+    const have = new Set(); for await (const [name] of mdir.entries()) have.add(name.split('__')[0]);
+    const ids = await DB.keys('media'); const index = [];
+    for (const id of ids) {
+      const m = await DB.get('media', id); if (!m) continue;
+      index.push({ id, name: m.name, type: m.type, file: mediaFileName(m) });
+      if (!have.has(id)) await writeFile(mdir, mediaFileName(m), m.blob);
+    }
+    await writeFile(root, 'media-indice.json', JSON.stringify(index));
+    lastBackup = new Date().toISOString(); await DB.put('kv', lastBackup, 'lastBackup');
+  } catch (e) {
+    console.error(e);
+    FS.status = e.name === 'NotAllowedError' || e.name === 'SecurityError' ? 'needs-permission' : 'error';
+  }
+  updateBackupPill();
+}
+async function restoreFromFolder() {
+  if (!FS.handle || !confirm('Esto reemplaza los datos actuales por los de la carpeta de respaldo. ¿Continuar?')) return;
+  try {
+    const f = await (await FS.handle.getFileHandle('journal-datos.json')).getFile();
+    const data = JSON.parse(await f.text());
+    let index = []; try { index = JSON.parse(await (await (await FS.handle.getFileHandle('media-indice.json')).getFile()).text()); } catch (e) { }
+    const types = Object.fromEntries(index.map(i => [i.id, i]));
+    const mdir = await FS.handle.getDirectoryHandle('media', { create: true });
+    const have = new Set(await DB.keys('media'));
+    for await (const [name, h] of mdir.entries()) {
+      const id = name.split('__')[0]; if (have.has(id) || h.kind !== 'file') continue;
+      const file = await h.getFile();
+      await DB.put('media', { id, blob: file, name: types[id]?.name || name.split('__').slice(1).join('__'), type: types[id]?.type || file.type, size: file.size, created: new Date().toISOString() });
+    }
+    const key = S.settings.ai.apiKey;
+    S = migrate(data.state); S.settings.ai.apiKey = key; await save(); render(); toast('Datos restaurados desde la carpeta ✓');
+  } catch (e) { toast('No se pudo restaurar: ' + e.message, 5000); }
+}
+function updateBackupPill() {
+  const p = $('#backupPill'); if (!p || !S) return;
+  const ago = iso => { if (!iso) return 'nunca'; const m = Math.round((Date.now() - new Date(iso)) / 60000); return m < 1 ? 'ahora' : m < 60 ? `hace ${m} min` : m < 1440 ? `hace ${Math.round(m / 60)} h` : `hace ${Math.round(m / 1440)} d`; };
+  p.className = 'pill';
+  if (FS.status === 'ok') { p.classList.add('ok'); p.textContent = '✓ Respaldo en carpeta · ' + ago(lastBackup); }
+  else if (FS.status === 'needs-permission') { p.classList.add('bad'); p.textContent = '⚠ Toca para reconectar carpeta de respaldo'; }
+  else if (FS.status === 'error') { p.classList.add('bad'); p.textContent = '⚠ Error de respaldo — revisar'; }
+  else {
+    const old = !S.settings.lastExport || (Date.now() - new Date(S.settings.lastExport)) > 7 * 864e5;
+    if (old && (S.trades.length || S.tasks.length)) p.classList.add('bad');
+    p.textContent = (old ? '⚠ ' : '✓ ') + 'Último respaldo: ' + ago(S.settings.lastExport);
+  }
+}
+async function blobToDataURL(b) { return new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = () => rej(r.error); r.readAsDataURL(b); }); }
+async function dataURLToBlob(u) { return (await fetch(u)).blob(); }
+async function exportJSON() {
+  toast('Preparando respaldo…');
+  const media = [];
+  for (const id of await DB.keys('media')) { const m = await DB.get('media', id); if (m) media.push({ id, name: m.name, type: m.type, created: m.created, data: await blobToDataURL(m.blob) }); }
+  S.settings.lastExport = new Date().toISOString(); await save();
+  download(`trading-journal-respaldo-${todayISO()}.json`, JSON.stringify({ app: 'trading-journal', version: 1, exported: new Date().toISOString(), state: stateForExport(), media }));
+  updateBackupPill(); toast('Respaldo descargado ✓ Guárdalo en tu carpeta de respaldo.', 4000);
+}
+function mergeById(a, b) {
+  const m = new Map(a.map(x => [x.id, x]));
+  for (const x of b || []) { const y = m.get(x.id); if (!y || (x.updated || x.created || '') > (y.updated || y.created || '')) m.set(x.id, x); }
+  return [...m.values()];
+}
+async function importJSON(file, how) {
+  try {
+    const data = JSON.parse(await file.text());
+    if (!data.state) throw new Error('El archivo no es un respaldo de este journal');
+    const have = new Set(await DB.keys('media'));
+    for (const m of data.media || []) if (!have.has(m.id)) await DB.put('media', { id: m.id, blob: await dataURLToBlob(m.data), name: m.name, type: m.type, created: m.created });
+    const key = S.settings.ai.apiKey;
+    if (how === 'replace') { S = migrate(data.state); }
+    else {
+      const I = migrate(data.state);
+      for (const k of ['trades', 'tasks', 'logbook', 'analyses']) S[k] = mergeById(S[k], I[k]);
+      if ((I.plan.updated || '') > (S.plan.updated || '')) S.plan = I.plan;
+      S.settings.accounts = mergeById(S.settings.accounts, I.settings.accounts);
+      S.planReads = { ...I.planReads, ...S.planReads };
+    }
+    S.settings.ai.apiKey = key;
+    await save(); render(); toast(how === 'replace' ? 'Datos restaurados ✓' : 'Datos combinados ✓');
+  } catch (e) { toast('No se pudo importar: ' + e.message, 5000); }
+}
+function exportCSV(mode) {
+  const ts = sortTrades(S.trades.filter(t => mode === 'all' || t.mode === mode)); const bal = balances();
+  const cols = ['modo', 'cuenta', 'fecha', 'dia', 'hora', 'salida', 'instrumento', 'direccion', 'lotes', 'entrada', 'precio_salida', 'sl_pts', 'tp_pts', 'puntos', 'resultado_$', 'resultado_R', '%_cuenta', 'W/L', 'setup', 'zonas', 'emocion', 'intensidad', 'emocion_despues', 'cumplimiento', 'errores', 'analisis', 'emocional', 'que_paso', 'leccion'];
+  const q = v => { v = v == null ? '' : String(v); return /[",;\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+  const rows = ts.map(t => [t.mode, t.mode === 'real' ? accountName(t.accountId) : '', t.date, DOW[dow(t.date)], t.time, t.exitTime, t.instrument, t.direction === 'short' ? 'venta' : 'compra', t.lots, t.entry, t.exit, t.slPoints, t.tpPoints, t.points, t.pnl, t.r, bal[t.id]?.pct != null ? (bal[t.id].pct * 100).toFixed(2) : '', outcome(t), t.setup, (t.zones || []).join(' '), t.emotion, t.emotionLevel, t.emotionAfter, compliance(t) == null ? '' : Math.round(compliance(t) * 100) + '%', (t.errors || []).join(' | '), t.analysis, t.emotional, t.whatHappened, t.lesson].map(q).join(','));
+  download(`trades-${mode}-${todayISO()}.csv`, '﻿' + [cols.join(','), ...rows].join('\n'), 'text/csv');
+}
+
+/* =========================================================
+   Datos de ejemplo
+   ========================================================= */
+function loadDemo() {
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const pick = a => a[Math.floor(rnd() * a.length)];
+  const acc = S.settings.accounts[0].id, rules = S.plan.rules.map(r => r.id);
+  let d = addDays(todayISO(), -75), n = 0;
+  while (d < todayISO()) {
+    d = addDays(d, 1); const wd = dow(d); if (wd === 0 || wd === 6) continue;
+    if (rnd() < 0.25) continue;
+    const k = rnd() < 0.7 ? 1 : rnd() < 0.7 ? 2 : 3; let tm = 330 + Math.floor(rnd() * 150), lastL = false;
+    for (let i = 0; i < k; i++) {
+      const late = tm > 600, revenge = lastL && i > 0, emo = revenge ? pick(['Frustración', 'Venganza', 'Ansiedad']) : late ? pick(['FOMO', 'Aburrimiento', 'Calma']) : pick(['Calma', 'Confianza', 'Paciencia', 'Miedo', 'Calma']);
+      const setup = pick(['MSS (ruptura M5/M1)', 'Toma de liquidez + ruptura', 'Trampa + ruptura', 'BOS con la 55 M5']);
+      let p = 0.55; if (setup.startsWith('Toma')) p += 0.12; if (setup.startsWith('BOS')) p -= 0.15; if (late) p -= 0.25; if (revenge) p -= 0.25; if (wd === 2) p -= 0.1; if (['FOMO', 'Venganza', 'Frustración'].includes(emo)) p -= 0.1;
+      const win = rnd() < p, be = !win && rnd() < 0.15;
+      let r = win ? pick([1, 2, 2, 4, 1.4, 4.5]) : be ? 0 : (rnd() < 0.2 ? -1.6 : -1);
+      const errors = []; if (late) errors.push('Fuera de horario'); if (revenge) errors.push('No esperé 90 min'); if (r < -1.2) errors.push('Moví el stop'); if (emo === 'FOMO') errors.push('FOMO / perseguí el precio'); if (!win && rnd() < 0.2) errors.push('Entré sin confirmación');
+      const rr = {}; rules.forEach(id => { if (rnd() < (errors.length ? 0.55 : 0.92)) rr[id] = true; });
+      S.trades.push({ id: uid(), demo: true, mode: 'real', accountId: acc, date: d, time: minToHM(tm), exitTime: minToHM(tm + 15 + Math.floor(rnd() * 50)), instrument: 'NAS100', direction: rnd() < 0.55 ? 'long' : 'short', lots: 2, slPoints: 50, r, points: r * 50, pnl: +(r * 300).toFixed(2), setup, zones: [pick(['H4', 'H1', 'D1'])], emotion: emo, emotionLevel: revenge ? 5 : 1 + Math.floor(rnd() * 4), emotionAfter: win ? 'Confianza' : pick(['Frustración', 'Calma', 'Miedo']), errors, rules: rr, rulesReviewed: true, analysis: 'Trade de ejemplo — ' + setup + ' en zona.', media: [], created: new Date().toISOString() });
+      lastL = r < 0; tm += revenge ? 25 : 40 + Math.floor(rnd() * 80); n++;
+    }
+  }
+  // Backtesting de julio 2023 (tu hoja de Excel)
+  const bt = [[4, 0], [5, .5], [6, 0], [7, 2], [10, 2], [11, 2], [12, 2], [13, -1], [14, .5], [17, 0], [18, .5], [19, -1], [20, .5], [21, .5], [24, 2], [25, 2], [26, -1], [27, -1], [28, 2], [31, 2]];
+  bt.forEach(([day, r]) => S.trades.push({ id: uid(), demo: true, mode: 'backtest', date: `2023-07-${pad(day)}`, time: '08:00', instrument: 'NAS100', direction: 'long', slPoints: 90, r, setup: 'MSS (ruptura M5/M1)', media: [], errors: [], rules: {}, created: new Date().toISOString() }));
+  S.tasks.push({ id: uid(), demo: true, title: 'Backtesting de julio: NAS SL 90, TP 1:1 / 1:3', week: 'Semana 1 – Clase 1', status: 'doing', priority: 'alta', due: addDays(todayISO(), 3), desc: 'Llenar la hoja con 1 sola entrada doble y comparar riesgo 1%, 1.5% y 2%.', media: [], created: new Date().toISOString() });
+  S.tasks.push({ id: uid(), demo: true, title: 'Presentar plan de negocio (KING NQ)', week: 'Semana 1', status: 'done', desc: '', media: [], created: new Date().toISOString() });
+  S.logbook.push({ id: uid(), demo: true, date: addDays(todayISO(), -6), title: 'Metí lotaje por emociones', emotion: 'Frustración', cost: 650, mistake: 'Debí haberme quedado sin operar ese día solo con el parcial ganado. No borré las operaciones de abajo y perdí de más. Luego metí un lotaje por emociones. Tuve el valor de cerrar pero casi pierdo la cuenta.', lesson: 'Para mejorar debo leer mi plan de trading en el celular antes de empezar a poner órdenes.', media: [], created: new Date().toISOString() });
+  save(); render(); toast(`Ejemplo cargado: ${n} trades reales + ${bt.length} de backtesting`);
+}
+
+/* =========================================================
+   Acciones (clics)
+   ========================================================= */
+function setPath(path, v) { const ks = path.split('.'); let o = S.ui; ks.slice(0, -1).forEach(k => o = o[k]); o[ks[ks.length - 1]] = v; }
+const A = {
+  tab: el => { S.ui.tab = el.dataset.tab; save(); render(); window.scrollTo(0, 0); },
+  setUi: el => { setPath(el.dataset.path, el.dataset.value); save(); render(); },
+  toggleTheme: () => { S.settings.theme = S.settings.theme === 'dark' ? 'light' : 'dark'; save(); render(); },
+  toggleCard: el => { const k = el.dataset.key; S.settings.collapsed[k] = !S.settings.collapsed[k]; el.closest('.card').classList.toggle('collapsed'); save(); },
+  hideCard: el => { S.settings.hiddenCards[el.dataset.key] = el.dataset.title || true; save(); render(); toast('Sección oculta. Puedes mostrarla de nuevo arriba o en Ajustes.'); },
+  showCard: el => { delete S.settings.hiddenCards[el.dataset.key]; save(); render(); },
+  closeModal, closeLightbox: () => { $('#lightbox').classList.add('hidden'); $('#lbContent').innerHTML = ''; },
+  modalSave: async el => { if (!modalSave) return; el.disabled = true; try { const r = await modalSave(); if (r !== false) { closeModal(); render(); } } finally { el.disabled = false; } },
+  newTrade: el => tradeForm(null, el.dataset.mode || 'real'),
+  newTradeFab: () => tradeForm(null, S.ui.tab === 'backtest' ? 'backtest' : 'real'),
+  editTrade: el => tradeForm(el.dataset.id),
+  dupTrade: el => tradeForm(el.dataset.id, null, true),
+  toggleTrade: (el, e) => { if (e.target.closest('button')) return; el.closest('.trade').classList.toggle('open'); },
+  delTrade: async el => { const t = S.trades.find(x => x.id === el.dataset.id); if (!t || !confirm('¿Eliminar este trade y sus archivos?')) return; await deleteMedia(t.media); S.trades = S.trades.filter(x => x !== t); await save(); render(); },
+  checkAll: () => $$('#modalForm input[name=rules]').forEach(i => i.checked = true),
+  logFromTrade: el => { const t = S.trades.find(x => x.id === el.dataset.id); logForm(null, { date: t.date, title: (t.errors || [])[0] || '', emotion: t.emotion, cost: t.pnl < 0 ? Math.abs(t.pnl) : null, mistake: [t.whatHappened, t.emotional].filter(Boolean).join('\n'), lesson: t.lesson }); },
+  clearRealFilters: () => { Object.assign(S.ui.real, { from: '', to: '', q: '', outcome: 'all' }); save(); render(); },
+  openDay: el => { Object.assign(S.ui.real, { from: el.dataset.date, to: el.dataset.date, outcome: 'all', q: '' }); if (S.ui.dash.mode === 'backtest') { S.ui.tab = 'backtest'; S.ui.bt.month = el.dataset.date.slice(0, 7); } else S.ui.tab = 'real'; save(); render(); window.scrollTo(0, 0); },
+  openMedia: el => openMedia(el.dataset.id),
+  markPlanRead: () => { const T = todayISO(); if (S.planReads[T]) delete S.planReads[T]; else S.planReads[T] = new Date().toISOString(); save(); render(); },
+  readPlan: () => { S.ui.tab = 'plan'; S.ui.planRead = true; S.ui.planEdit = false; save(); render(); window.scrollTo(0, 0); },
+  planReadToggle: () => { S.ui.planRead = !S.ui.planRead; save(); render(); },
+  planEdit: () => { S.ui.planEdit = !S.ui.planEdit; S.ui.planRead = false; if (!S.ui.planEdit) { S.plan.updated = new Date().toISOString(); toast('Plan guardado ✓'); } save(); render(); },
+  secAdd: () => { S.plan.sections.push({ id: uid(), col: 1, title: 'Nueva sección', body: '' }); save(); render(); },
+  secDel: el => { if (!confirm('¿Eliminar esta sección del plan?')) return; S.plan.sections = S.plan.sections.filter(s => s.id !== el.dataset.id); save(); render(); },
+  secMove: el => { const a = S.plan.sections, i = a.findIndex(s => s.id === el.dataset.id), j = i + +el.dataset.dir; if (j < 0 || j >= a.length) return; [a[i], a[j]] = [a[j], a[i]]; save(); render(); },
+  secCol: el => { const s = S.plan.sections.find(s => s.id === el.dataset.id); s.col = (s.col || 1) === 1 ? 2 : 1; save(); render(); },
+  ruleAdd: () => { S.plan.rules.push({ id: uid(), text: 'Nueva regla' }); save(); render(); },
+  ruleDel: el => { S.plan.rules = S.plan.rules.filter(r => r.id !== el.dataset.id); save(); render(); },
+  verSave: () => { const note = prompt('Nota de esta versión (ej. "Cambié máximo de trades a 2"):', ''); if (note === null) return; const { versions, ...snap } = S.plan; S.plan.versions.push({ id: uid(), date: new Date().toISOString(), note, snapshot: structuredClone(snap) }); save(); render(); toast('Versión guardada ✓'); },
+  verView: el => { const v = S.plan.versions.find(x => x.id === el.dataset.id); const p = v.snapshot; openModal(`Versión del ${fmtDate(v.date.slice(0, 10))}`, `<p class="muted">${esc(v.note || '')}</p><h3>${esc(p.title)} — ${esc(p.subtitle)}</h3>${p.sections.map(s => `<h4>${esc(s.title)}</h4>${md(s.body)}`).join('')}<h4>Checklist</h4><ol>${p.rules.map(r => `<li>${esc(r.text)}</li>`).join('')}</ol>`); },
+  verRestore: el => { if (!confirm('¿Restaurar esta versión? Tu plan actual se guardará antes como versión.')) return; const v = S.plan.versions.find(x => x.id === el.dataset.id); const { versions, ...cur } = S.plan; versions.push({ id: uid(), date: new Date().toISOString(), note: 'Antes de restaurar', snapshot: structuredClone(cur) }); S.plan = { ...structuredClone(v.snapshot), versions, updated: new Date().toISOString() }; save(); render(); },
+  printPlan: () => { S.ui.planEdit = false; render(); setTimeout(() => window.print(), 100); },
+  newTask: () => taskForm(null), editTask: el => taskForm(el.dataset.id),
+  delTask: async el => { const t = S.tasks.find(x => x.id === el.dataset.id); if (!confirm('¿Eliminar esta tarea?')) return; await deleteMedia(t.media); S.tasks = S.tasks.filter(x => x !== t); await save(); closeModal(); render(); },
+  newLog: () => logForm(null), editLog: el => logForm(el.dataset.id),
+  delLog: async el => { const l = S.logbook.find(x => x.id === el.dataset.id); if (!confirm('¿Eliminar esta entrada?')) return; await deleteMedia(l.media); S.logbook = S.logbook.filter(x => x !== l); await save(); render(); },
+  taskFromLog: el => { const l = S.logbook.find(x => x.id === el.dataset.id); taskForm(null, { title: 'Mejora: ' + (l.title || l.lesson || '').slice(0, 80), desc: l.lesson || '' }); },
+  openAn: (el, e) => { if (e.target.closest('[data-action="delAn"]')) return; S.ui.aiOpen = el.dataset.id; save(); render(); if (innerWidth < 900) $('.an-main')?.scrollIntoView({ behavior: 'smooth' }); },
+  delAn: (el, e) => { e.stopPropagation(); if (!confirm('¿Eliminar este análisis guardado?')) return; S.analyses = S.analyses.filter(a => a.id !== el.dataset.id); save(); render(); },
+  reAn: el => { const a = S.analyses.find(x => x.id === el.dataset.id); a.result = analyze(a); a.updated = new Date().toISOString(); save(); render(); toast('Análisis actualizado ✓'); },
+  copyAn: async el => { const a = S.analyses.find(x => x.id === el.dataset.id); const txt = anClipboardText(a); try { await navigator.clipboard.writeText(txt); toast('Copiado ✓ Pégalo en una conversación con Claude.', 4000); } catch (e) { download('analisis-para-claude.txt', txt, 'text/plain'); } },
+  recTask: el => { const a = S.analyses.find(x => x.id === el.dataset.id); const rec = a.result.recs[+el.dataset.i]; taskForm(null, { title: rec.slice(0, 90), desc: `Del análisis "${a.name || ''}" (${fmtDate(a.from)} → ${fmtDate(a.to)}):\n${rec}`, priority: 'alta' }); },
+  accAdd: () => { S.settings.accounts.push({ id: uid(), name: 'Nueva cuenta', initial: 0, type: 'Fondeo' }); save(); render(); },
+  accDel: el => { if (S.trades.some(t => t.accountId === el.dataset.id)) { toast('Esta cuenta tiene trades. Muévelos o bórralos primero.', 4000); return; } if (S.settings.accounts.length < 2) { toast('Debe quedar al menos una cuenta'); return; } S.settings.accounts = S.settings.accounts.filter(a => a.id !== el.dataset.id); save(); render(); },
+  chooseFolder, reconnectFolder, backupNow: async () => { await backupToFolder(); render(); toast(FS.status === 'ok' ? 'Respaldo hecho ✓' : 'No se pudo respaldar'); },
+  restoreFolder: restoreFromFolder,
+  backupPill: () => { if (FS.status === 'needs-permission') return reconnectFolder(); S.ui.tab = 'settings'; render(); window.scrollTo(0, 0); },
+  exportJSON, exportCSV: el => exportCSV(el.dataset.mode),
+  importJSON: el => { const i = $('#importFile'); i.dataset.how = el.dataset.how; i.click(); },
+  loadDemo,
+  delDemo: async () => { if (!confirm('¿Borrar los datos de ejemplo?')) return; for (const k of ['trades', 'tasks', 'logbook']) S[k] = S[k].filter(x => !x.demo); await save(); render(); toast('Ejemplo borrado'); },
+  wipe: async () => { if (!confirm('¿Borrar TODOS tus datos de este dispositivo? (tu carpeta de respaldo no se toca)')) return; if (prompt('Escribe BORRAR para confirmar') !== 'BORRAR') return; await DB.clear('media'); const th = S.settings.theme; S = defaultState(); S.settings.theme = th; await save(); render(); },
+};
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]'); if (!el) return;
+  const fn = A[el.dataset.action]; if (!fn) return;
+  if (el.tagName === 'A') e.preventDefault();
+  fn(el, e);
+});
+$('#modal').addEventListener('click', e => { if (e.target.id === 'modal') { /* no cerrar por accidente */ } });
+$('#lightbox').addEventListener('click', e => { if (e.target.id === 'lightbox') A.closeLightbox(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (!$('#lightbox').classList.contains('hidden')) A.closeLightbox(); } });
+
+/* Cambios en campos */
+const C = {
+  setUi: el => { setPath(el.dataset.path, el.value); save(); render(); },
+  planParam: el => { const p = S.plan.params; p[el.name] = el.type === 'number' ? num(el.value) : el.value; S.plan.updated = new Date().toISOString(); save(); },
+  planField: el => { S.plan[el.dataset.f] = el.value; S.plan.updated = new Date().toISOString(); save(); },
+  secTitle: el => { S.plan.sections.find(s => s.id === el.dataset.id).title = el.value; S.plan.updated = new Date().toISOString(); save(); },
+  secBody: el => { S.plan.sections.find(s => s.id === el.dataset.id).body = el.value; S.plan.updated = new Date().toISOString(); save(); },
+  ruleText: el => { S.plan.rules.find(r => r.id === el.dataset.id).text = el.value; save(); },
+  taskDone: el => { const t = S.tasks.find(x => x.id === el.dataset.id); t.status = el.checked ? 'done' : 'todo'; t.updated = new Date().toISOString(); save(); render(); },
+  anNotes: el => { const a = S.analyses.find(x => x.id === el.dataset.id); a.notes = el.value; a.updated = new Date().toISOString(); save(); toast('Conclusiones guardadas ✓'); },
+  setS: el => { S.settings[el.dataset.k] = el.dataset.num ? (num(el.value) ?? 0) : el.value; save(); render(); },
+  setAI: el => { S.settings.ai[el.dataset.k] = el.value.trim(); save(); toast('Guardado ✓'); },
+  setList: el => { S.settings[el.dataset.k] = el.value.split('\n').map(x => x.trim()).filter(Boolean); save(); },
+  setRisks: el => { const r = el.value.split(/[,;\s]+/).map(num).filter(x => x != null && x > 0); if (r.length) { S.settings.btRisks = r; save(); } },
+  tabVis: el => { if (el.checked) delete S.settings.hiddenTabs[el.dataset.k]; else S.settings.hiddenTabs[el.dataset.k] = true; save(); renderTabs(); },
+  accField: el => { const a = S.settings.accounts.find(x => x.id === el.dataset.id); a[el.dataset.f] = el.dataset.f === 'initial' ? (num(el.value) ?? 0) : el.value; a.updated = new Date().toISOString(); save(); },
+};
+document.addEventListener('change', e => { const el = e.target.closest('[data-change]'); if (el && C[el.dataset.change]) C[el.dataset.change](el, e); });
+$('#importFile').addEventListener('change', e => { const f = e.target.files[0]; if (!f) return; const how = e.target.dataset.how; if (how === 'replace' && !confirm('Esto reemplaza TODOS los datos actuales por los del archivo. ¿Continuar?')) { e.target.value = ''; return; } importJSON(f, how); e.target.value = ''; });
+
+/* Formularios con submit */
+document.addEventListener('submit', async e => {
+  const f = e.target;
+  if (f.id === 'btQuick') {
+    e.preventDefault(); const d = new FormData(f); const r = num(d.get('r')); if (r == null) { toast('Indica el resultado en R'); return; }
+    S.trades.push({ id: uid(), mode: 'backtest', date: d.get('date'), time: d.get('time'), direction: d.get('direction'), setup: d.get('setup'), r, analysis: d.get('analysis'), instrument: S.settings.instrument, zones: [], rules: {}, errors: [], media: [], created: new Date().toISOString(), updated: new Date().toISOString() });
+    await save(); render(); toast('Backtest agregado ✓'); setTimeout(() => $('#btQuick [name=r]')?.focus(), 50);
+  }
+  if (f.id === 'anForm') {
+    e.preventDefault(); const d = new FormData(f);
+    const a = { id: uid(), created: new Date().toISOString(), name: d.get('name') || `${{ real: 'Real', backtest: 'Backtesting', both: 'Real + Backtesting' }[d.get('mode')]} ${fmtDate(d.get('from'))} → ${fmtDate(d.get('to'))}`, from: d.get('from'), to: d.get('to'), mode: d.get('mode'), account: d.get('account'), notes: '', chat: [] };
+    a.result = analyze(a); S.analyses.push(a); S.ui.aiOpen = a.id; await save(); render(); toast('Análisis guardado ✓');
+  }
+  if (f.id === 'chatForm') {
+    e.preventDefault(); const a = S.analyses.find(x => x.id === f.dataset.id); const q = new FormData(f).get('q').trim();
+    if (a.chat && a.chat.length && !q) return;
+    const b = f.querySelector('button'); b.disabled = true; b.textContent = 'Pensando… (puede tardar un minuto)';
+    try { await askClaude(a, q); render(); } catch (err) { toast('⚠ ' + err.message, 6000); b.disabled = false; b.textContent = 'Reintentar'; }
+  }
+});
+
+/* =========================================================
+   Inicio
+   ========================================================= */
+(async function init() {
+  try {
+    await DB.open();
+    S = await DB.get('kv', 'state');
+    S = S ? migrate(S) : defaultState();
+    if (!S.savedAt) await save();
+    await initFolder();
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => { });
+    render();
+    if (navigator.storage && navigator.storage.estimate) navigator.storage.estimate().then(e => { const el = $('#storageInfo'); if (el) el.textContent = `Espacio usado: ${(e.usage / 1048576).toFixed(1)} MB.`; }).catch(() => { });
+    setInterval(() => { if (S.ui.tab === 'dashboard' && $('#modal').classList.contains('hidden') && !document.activeElement?.matches('input,select,textarea')) render(); else updateBackupPill(); }, 60000);
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js').catch(() => { });
+  } catch (e) {
+    console.error(e);
+    $('#view').innerHTML = `<div class="banner">No se pudo abrir la base de datos local: ${esc(e.message)}. Prueba con Chrome o Edge actualizados y que no estés en modo incógnito.</div>`;
+  }
+})();
+</script>
+</body>
+</html>
