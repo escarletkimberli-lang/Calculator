@@ -1421,7 +1421,7 @@ async function initFolder() {
 }
 async function chooseFolder() {
   try {
-    const h = await window.showDirectoryPicker({ id: 'trading-journal', mode: 'readwrite' });
+    const h = await window.showDirectoryPicker({ id: 'trading-journal', mode: 'readwrite', startIn: 'desktop' });
     await DB.put('kv', h, 'backupHandle'); FS.handle = h; FS.status = 'ok';
     await backupToFolder(); toast('Carpeta conectada. Respaldo hecho ✓');
   } catch (e) { if (e.name !== 'AbortError') toast('No se pudo usar la carpeta: ' + e.message, 4000); }
